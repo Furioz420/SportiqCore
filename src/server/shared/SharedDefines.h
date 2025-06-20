@@ -67,88 +67,142 @@ enum Gender
 // EnumUtils: DESCRIBE THIS
 enum Races
 {
-    RACE_NONE               = 0,  // SKIP
-    RACE_HUMAN              = 1,  // TITLE Human
-    RACE_ORC                = 2,  // TITLE Orc
-    RACE_DWARF              = 3,  // TITLE Dwarf
-    RACE_NIGHTELF           = 4,  // TITLE Night Elf
-    RACE_UNDEAD_PLAYER      = 5,  // TITLE Undead
-    RACE_TAUREN             = 6,  // TITLE Tauren
-    RACE_GNOME              = 7,  // TITLE Gnome
-    RACE_TROLL              = 8,  // TITLE Troll
-    //RACE_GOBLIN             = 9,
-    RACE_BLOODELF           = 10, // TITLE Blood Elf
-    RACE_DRAENEI            = 11 //, TITLE Draenei
-    //RACE_FEL_ORC        = 12,
-    //RACE_NAGA           = 13,
-    //RACE_BROKEN         = 14,
-    //RACE_SKELETON       = 15,
-    //RACE_VRYKUL         = 16,
-    //RACE_TUSKARR        = 17,
-    //RACE_FOREST_TROLL   = 18,
-    //RACE_TAUNKA         = 19,
-    //RACE_NORTHREND_SKELETON = 20,
-    //RACE_ICE_TROLL      = 21
+    RACE_NONE = 0,  // SKIP
+    RACE_HUMAN = 1,  // TITLE Human
+    RACE_ORC = 2,  // TITLE Orc
+    RACE_DWARF = 3,  // TITLE Dwarf
+    RACE_NIGHTELF = 4,  // TITLE Night Elf
+    RACE_UNDEAD_PLAYER = 5,  // TITLE Undead
+    RACE_TAUREN = 6,  // TITLE Tauren
+    RACE_GNOME = 7,  // TITLE Gnome
+    RACE_TROLL = 8,  // TITLE Troll
+    RACE_VULPERA = 9,
+    RACE_BLOODELF = 10, // TITLE Blood Elf
+    RACE_DRAENEI = 11, //, TITLE Draenei
+    RACE_WORGEN = 12,
+    RACE_NIGHTBORNELF = 13,
+    RACE_HIGHELF = 14,
+    RACE_VOIDELF = 15,
+    RACE_EREDAR = 16,
+    RACE_DRACTHYR_H = 17,
+    RACE_TROLL_ZANDALARI = 18,
+    RACE_OGRE = 19,
+    RACE_LIGHTFORGED = 20,
+    RACE_GOBLIN = 21,
+    RACE_PANDAREN_H = 22,
+    RACE_BROKEN = 23,
+    RACE_TUSKARR = 24,
+    RACE_HIGHMOUNTAIN = 25,
+    RACE_PANDAREN_A = 26,
+    RACE_ILLIDARI_BLOODELF = 27,
+    RACE_TROLL_2 = 28,
+    RACE_DARKIRONDWARF = 29,
+    RACE_DRACTHYR_A = 30,
+    RACE_KULTIRAN = 31,
+    RACE_ILLIDARI_NIGHTELF = 32
 };
 
 // max+1 for player race
-#define MAX_RACES         12
+#define MAX_RACES         32
 
 #define RACEMASK_ALL_PLAYABLE \
-    ((1<<(RACE_HUMAN-1))   |(1<<(RACE_ORC-1))          |(1<<(RACE_DWARF-1))   | \
-    (1<<(RACE_NIGHTELF-1))|(1<<(RACE_UNDEAD_PLAYER-1))|(1<<(RACE_TAUREN-1))  | \
-    (1<<(RACE_GNOME-1))   |(1<<(RACE_TROLL-1))        |(1<<(RACE_BLOODELF-1))| \
-    (1<<(RACE_DRAENEI-1)))
+   ((1<<(RACE_HUMAN-1))            | (1<<(RACE_ORC-1))                | (1<<(RACE_DWARF-1))              | \
+   (1<<(RACE_NIGHTELF-1))          | (1<<(RACE_UNDEAD_PLAYER-1))      | (1<<(RACE_TAUREN-1))             | \
+   (1<<(RACE_GNOME-1))             | (1<<(RACE_TROLL-1))              | (1<<(RACE_VULPERA-1))            | \
+   (1<<(RACE_BLOODELF-1))          | (1<<(RACE_DRAENEI-1))            | (1<<(RACE_WORGEN-1))             | \
+   (1<<(RACE_NIGHTBORNELF-1))      | (1<<(RACE_HIGHELF-1))            | (1<<(RACE_VOIDELF-1))            | \
+   (1<<(RACE_EREDAR-1))            | (1<<(RACE_DRACTHYR_H-1))         | (1<<(RACE_TROLL_ZANDALARI-1))    | \
+   (1<<(RACE_OGRE-1))              | (1<<(RACE_LIGHTFORGED-1))        | (1<<(RACE_GOBLIN-1))             | \
+   (1<<(RACE_PANDAREN_H-1))        | (1<<(RACE_BROKEN-1))             | (1<<(RACE_TUSKARR-1))            | \
+   (1<<(RACE_HIGHMOUNTAIN-1))      | (1<<(RACE_PANDAREN_A-1))         | (1<<(RACE_ILLIDARI_BLOODELF-1))  | \
+   (1<<(RACE_TROLL_2-1))           | (1<<(RACE_DARKIRONDWARF-1))      | (1<<(RACE_DRACTHYR_A-1))         | \
+   (1<<(RACE_KULTIRAN-1))          | (1<<(RACE_ILLIDARI_NIGHTELF-1)))
 
 #define RACEMASK_ALLIANCE \
-    ((1<<(RACE_HUMAN-1)) | (1<<(RACE_DWARF-1)) | (1<<(RACE_NIGHTELF-1)) | \
-    (1<<(RACE_GNOME-1)) | (1<<(RACE_DRAENEI-1)))
+     ((1<<(RACE_HUMAN-1))              | (1<<(RACE_DWARF-1))              | (1<<(RACE_NIGHTELF-1)) | \
+     (1<<(RACE_GNOME-1))               | (1<<(RACE_DRAENEI-1))            | (1<<(RACE_KULTIRAN-1)) | \
+     (1<<(RACE_DARKIRONDWARF-1))       | (1<<(RACE_ILLIDARI_NIGHTELF-1))  | (1<<(RACE_HIGHELF-1))  | \
+     (1<<(RACE_VOIDELF-1))             | (1<<(RACE_LIGHTFORGED-1))        | (1<<(RACE_WORGEN-1))   | \
+     (1<<(RACE_DRACTHYR_A-1))          | (1<<(RACE_PANDAREN_A-1)))
+
 
 #define RACEMASK_HORDE RACEMASK_ALL_PLAYABLE & ~RACEMASK_ALLIANCE
 
 // DisplayRace values from CreatureDisplayInfoExtra.dbc
 enum class DisplayRace : uint8
 {
-    None              = 0,
-    Human             = 1,
-    Orc               = 2,
-    Dwarf             = 3,
-    NightElf          = 4,
-    Undead            = 5,
-    Tauren            = 6,
-    Gnome             = 7,
-    Troll             = 8,
-    Goblin            = 9,
-    BloodElf          = 10,
-    Draenei           = 11,
-    FelOrc            = 12,
-    Naga              = 13,
-    Broken            = 14,
-    Skeleton          = 15,
-    Vrykul            = 16,
-    Tuskarr           = 17,
-    ForestTroll       = 18,
-    Taunka            = 19,
-    NorthrendSkeleton = 20,
-    IceTroll          = 21
+    None = 0,  // SKIP
+    Human = 1,  // TITLE Human
+    Orc = 2,  // TITLE Orc
+    Dwarf = 3,  // TITLE Dwarf
+    NightElf = 4,  // TITLE Night Elf
+    Undead = 5,  // TITLE Undead
+    Tauren = 6,  // TITLE Tauren
+    Gnome = 7,  // TITLE Gnome
+    Troll = 8,  // TITLE Troll
+    Vulpera = 9,
+    BloodElf = 10, // TITLE Blood Elf
+    Draenei = 11, //, TITLE Draenei
+    Worgen = 12,
+    Nightborne = 13,
+    HighElf = 14,
+    VoidElf = 15,
+    Eredar = 16,
+    Dracthyr_h = 17,
+    Zandalari = 18,
+    Ogre = 19,
+    Lightforged = 20,
+    Goblin = 21,
+    Pandareh = 22,
+    Broken = 23,
+    Tuskarr = 24,
+    Highmountain = 25,
+    Pandaren_a = 26,
+    Illidari_BloodElf = 27,
+    Troll2 = 28,            //Murloc
+    DarkIronDwarf = 29,
+    Dracthyr_a = 30,
+    Kultiran = 31,
+    Illidari_NightElf = 32,
+    Human2 = 33,
+    Orc2 = 34,
+    Dwarf2 = 35,
+    NightElf2 = 36,
+    Scourge2 = 37,
+    Tauren2 = 38,
+    Gnome2 = 39,
+    Troll3 = 40,
+    Goblin2 = 41,
+    BloodElf2 = 42,
+    Draenei2 = 43,
+    FelOrc = 44,
+    Naga_ = 45,
+    Broken2 = 46,
+    Skeleton = 47,
+    Vrykul = 48,
+    Tuskarr2 = 49,
+    ForestTroll = 50,
+    Taunka = 51,
+    NorthrendSkeleton = 52,
+    IceTroll = 53
 };
 
 // Class value is index in ChrClasses.dbc
 // EnumUtils: DESCRIBE THIS
 enum Classes
 {
-    CLASS_NONE          = 0, // SKIP
-    CLASS_WARRIOR       = 1, // TITLE Warrior
-    CLASS_PALADIN       = 2, // TITLE Paladin
-    CLASS_HUNTER        = 3, // TITLE Hunter
-    CLASS_ROGUE         = 4, // TITLE Rogue
-    CLASS_PRIEST        = 5, // TITLE Priest
-    CLASS_DEATH_KNIGHT  = 6, // TITLE Death Knight
-    CLASS_SHAMAN        = 7, // TITLE Shaman
-    CLASS_MAGE          = 8, // TITLE Mage
-    CLASS_WARLOCK       = 9, // TITLE Warlock
+    CLASS_NONE = 0, // SKIP
+    CLASS_WARRIOR = 1, // TITLE Warrior
+    CLASS_PALADIN = 2, // TITLE Paladin
+    CLASS_HUNTER = 3, // TITLE Hunter
+    CLASS_ROGUE = 4, // TITLE Rogue
+    CLASS_PRIEST = 5, // TITLE Priest
+    CLASS_DEATH_KNIGHT = 6, // TITLE Death Knight
+    CLASS_SHAMAN = 7, // TITLE Shaman
+    CLASS_MAGE = 8, // TITLE Mage
+    CLASS_WARLOCK = 9, // TITLE Warlock
     //CLASS_UNK           = 10,
-    CLASS_DRUID         = 11 // TITLE Druid
+    CLASS_DRUID = 11 // TITLE Druid
 };
 
 // max+1 for player class

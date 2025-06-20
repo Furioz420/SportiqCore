@@ -2218,36 +2218,99 @@ public:
         // Output XI. LANG_PINFO_CHR_RACE
         switch (raceid)
         {
-            case RACE_HUMAN:
-                raceStr = "Human";
-                break;
-            case RACE_ORC:
-                raceStr = "Orc";
-                break;
-            case RACE_DWARF:
-                raceStr = "Dwarf";
-                break;
-            case RACE_NIGHTELF:
-                raceStr = "Night Elf";
-                break;
-            case RACE_UNDEAD_PLAYER:
-                raceStr = "Undead";
-                break;
-            case RACE_TAUREN:
-                raceStr = "Tauren";
-                break;
-            case RACE_GNOME:
-                raceStr = "Gnome";
-                break;
-            case RACE_TROLL:
-                raceStr = "Troll";
-                break;
-            case RACE_BLOODELF:
-                raceStr = "Blood Elf";
-                break;
-            case RACE_DRAENEI:
-                raceStr = "Draenei";
-                break;
+        case RACE_HUMAN:
+            raceStr = "Human";
+            break;
+        case RACE_ORC:
+            raceStr = "Orc";
+            break;
+        case RACE_DWARF:
+            raceStr = "Dwarf";
+            break;
+        case RACE_NIGHTELF:
+            raceStr = "Night Elf";
+            break;
+        case RACE_UNDEAD_PLAYER:
+            raceStr = "Undead";
+            break;
+        case RACE_TAUREN:
+            raceStr = "Tauren";
+            break;
+        case RACE_GNOME:
+            raceStr = "Gnome";
+            break;
+        case RACE_TROLL:
+            raceStr = "Troll";
+            break;
+        case RACE_BLOODELF:
+            raceStr = "Blood Elf";
+            break;
+        case RACE_DRAENEI:
+            raceStr = "Draenei";
+            break;
+        case RACE_WORGEN:
+            raceStr = "Worgen";
+            break;
+        case RACE_NIGHTBORNELF:
+            raceStr = "Nightborne";
+            break;
+        case RACE_HIGHELF:
+            raceStr = "High Elf";
+            break;
+        case RACE_VOIDELF:
+            raceStr = "Void Elf";
+            break;
+        case RACE_EREDAR:
+            raceStr = "Eredar";
+            break;
+        case RACE_DRACTHYR_H:
+            raceStr = "Dracthyr (h)";
+            break;
+        case RACE_TROLL_ZANDALARI:
+            raceStr = "Zandalari";
+            break;
+        case RACE_OGRE:
+            raceStr = "Ogre";
+            break;
+        case RACE_LIGHTFORGED:
+            raceStr = "Lightforged";
+            break;
+        case RACE_GOBLIN:
+            raceStr = "Goblin";
+            break;
+        case RACE_PANDAREN_H:
+            raceStr = "Pandaren (h)";
+            break;
+        case RACE_BROKEN:
+            raceStr = "Broken";
+            break;
+        case RACE_TUSKARR:
+            raceStr = "Tuskarr";
+            break;
+        case RACE_HIGHMOUNTAIN:
+            raceStr = "Highmountain";
+            break;
+        case RACE_PANDAREN_A:
+            raceStr = "Pandaren (a)";
+            break;
+        case RACE_ILLIDARI_BLOODELF:
+            raceStr = "Illidari Blood Elf";
+            break;
+        case RACE_TROLL_2:
+            raceStr = "Troll 2";
+            break;
+        case RACE_DARKIRONDWARF:
+            raceStr = "Dark Iron Dwarf";
+            break;
+        case RACE_DRACTHYR_A:
+            raceStr = "Dracthyr (a)";
+            break;
+        case RACE_KULTIRAN:
+            raceStr = "Kul Tiran";
+            break;
+        case RACE_ILLIDARI_NIGHTELF:
+            raceStr = "Illidari Night Elf";
+            break;
         }
 
         switch (classid)
