@@ -19249,42 +19249,165 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form, uint32 spellId)
     // Hardcoded cases
     switch (spellId)
     {
-        case 7090: // Bear form
-            return 29414;
-        case 35200: // Roc form
-            return 4877;
-        default:
-            break;
+    case 7090: // Bear form
+        return 29414;
+    case 35200: // Roc form
+        return 4877;
+    default:
+        break;
     }
 
     if (IsPlayer())
     {
-        if (uint32 ModelId = sObjectMgr->GetModelForShapeshift(form, ToPlayer()))
-            return ModelId;
-    }
-
-    uint32 modelid = 0;
-    SpellShapeshiftFormEntry const* formEntry = sSpellShapeshiftFormStore.LookupEntry(form);
-    if (formEntry && formEntry->modelID_A)
-    {
-        // Take the alliance modelid as default
-        if (!IsPlayer())
-            return formEntry->modelID_A;
-        else
+        Player* player = ToPlayer();
+        struct FormData
         {
-            if (Player::TeamIdForRace(getRace()) == TEAM_ALLIANCE)
-                modelid = formEntry->modelID_A;
-            else
-                modelid = formEntry->modelID_H;
+            const char* type;
+            ShapeshiftForm form;
+            uint32 defaultAlliance;
+            uint32 defaultHorde;
+            uint32 fallback;
+        };
 
-            // If the player is horde but there are no values for the horde modelid - take the alliance modelid
-            if (!modelid && Player::TeamIdForRace(getRace()) == TEAM_HORDE)
-                modelid = formEntry->modelID_A;
+        // Lookup table for forms
+        static const std::unordered_map<ShapeshiftForm, FormData> formLookup = {
+            { FORM_CAT,       { "cat",    FORM_CAT,       892,    8571,   0 } },
+            { FORM_BEAR,      { "bear",   FORM_BEAR,      2281,   2289,   0 } },
+            { FORM_DIREBEAR,  { "bear",   FORM_DIREBEAR,  2281,   2289,   0 } },
+            { FORM_FLIGHT,    { "fly",    FORM_FLIGHT,    20857,  20872,  0 } },
+            { FORM_FLIGHT_EPIC,{ "fly",   FORM_FLIGHT_EPIC,21243, 21244, 0 } },
+            { FORM_MOONKIN,   { "buho",   FORM_MOONKIN,   15374,  15375,  0 } },
+            { FORM_AQUA,      { "sea",    FORM_AQUA,      0,      0,      2428 } },
+            { FORM_TREE,      { "tree",   FORM_TREE,      2451,   864,    0 } },
+            { FORM_TRAVEL,    { "travel", FORM_TRAVEL,    918,    15593,  0 } },
+        };
+
+        auto itr = formLookup.find(form);
+        if (itr != formLookup.end())
+        {
+            const FormData& data = itr->second;
+            std::ostringstream ss;
+            ss << "SELECT display, SpellId, ReqSpellID FROM custom_druid_barbershop WHERE type = '" << data.type << "'";
+            QueryResult result = WorldDatabase.Query(ss.str().c_str());
+
+            if (result)
+            {
+                do
+                {
+                    Field* fields = result->Fetch();
+                    uint32 display = fields[0].Get<uint32>();
+                    uint32 spellID = fields[1].Get<uint32>();
+                    uint32 reqSpellID = fields[2].Get<uint32>();
+
+                    if (player->HasSpell(spellID) && (reqSpellID == 0 || player->HasSpell(reqSpellID)))
+                    {
+                        return display;
+                    }
+                } while (result->NextRow());
+            }
+
+            // Fallback: hair or skin-based logic
+            switch (form)
+            {
+            case FORM_CAT:
+                if (player->getRace() == RACE_NIGHTELF)
+                {
+                    switch (player->GetByteValue(PLAYER_BYTES, 3))
+                    {
+                    case 7: case 8: return 29405; // Violet
+                    case 3: return 29406; // Light Blue
+                    case 0: case 1: case 2: return 29407; // Greens
+                    case 4: return 29408; // White
+                    default: return 892; // Dark Blue (original)
+                    }
+                }
+                else if (player->getRace() == RACE_TAUREN)
+                {
+                    uint8 skinColor = player->GetByteValue(PLAYER_BYTES, 0);
+                    if (player->getGender() == GENDER_MALE)
+                    {
+                        if (skinColor >= 12 || skinColor == 18) return 29409;
+                        if (skinColor >= 9) return 29410;
+                        if (skinColor >= 6) return 29411;
+                        if (skinColor <= 5) return 29412;
+                        return 8571;
+                    }
+                    else
+                    {
+                        if (skinColor == 10) return 29409;
+                        if (skinColor <= 7) return 29410;
+                        if (skinColor <= 5) return 29411;
+                        return 29412;
+                    }
+                }
+                return data.defaultAlliance;
+
+            case FORM_BEAR:
+            case FORM_DIREBEAR:
+                if (player->getRace() == RACE_NIGHTELF)
+                {
+                    switch (player->GetByteValue(PLAYER_BYTES, 3))
+                    {
+                    case 0: case 1: case 2: return 29413;
+                    case 6: return 29414;
+                    case 4: return 29416;
+                    case 3: return 29417;
+                    default: return 2281;
+                    }
+                }
+                else if (player->getRace() == RACE_TAUREN)
+                {
+                    uint8 skinColor = player->GetByteValue(PLAYER_BYTES, 0);
+                    if (player->getGender() == GENDER_MALE)
+                    {
+                        if (skinColor <= 2) return 29418;
+                        if (skinColor >= 3 && skinColor <= 5) return 29419;
+                        if (skinColor >= 9 && skinColor <= 17) return 29420;
+                        if (skinColor == 18) return 29421;
+                        return 2289;
+                    }
+                    else
+                    {
+                        if (skinColor <= 1) return 29418;
+                        if (skinColor <= 3) return 29419;
+                        if (skinColor <= 9) return 29420;
+                        return 29421;
+                    }
+                }
+                return data.defaultHorde;
+
+            case FORM_AQUA:
+                return data.fallback;
+
+            default:
+                if (Player::TeamIdForRace(player->getRace()) == TEAM_ALLIANCE)
+                    return data.defaultAlliance;
+                else
+                    return data.defaultHorde;
+            }
         }
     }
 
-    return modelid;
+    // Fallback: default core shapeshift model
+    uint32 modelId = 0;
+    SpellShapeshiftFormEntry const* formEntry = sSpellShapeshiftFormStore.LookupEntry(form);
+    if (formEntry && formEntry->modelID_A)
+    {
+        if (!IsPlayer())
+            return formEntry->modelID_A;
+
+        if (Player::TeamIdForRace(getRace()) == TEAM_ALLIANCE)
+            modelId = formEntry->modelID_A;
+        else
+            modelId = formEntry->modelID_H;
+
+        if (!modelId && Player::TeamIdForRace(getRace()) == TEAM_HORDE)
+            modelId = formEntry->modelID_A;
+    }
+
+    return modelId;
 }
+
 
 Unit* Unit::GetRedirectThreatTarget() const
 {
