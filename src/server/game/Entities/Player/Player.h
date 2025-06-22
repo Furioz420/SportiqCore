@@ -43,6 +43,7 @@
 #include "WorldSession.h"
 #include <string>
 #include <vector>
+#include <Item.h>
 
 struct CreatureTemplate;
 struct Mail;
