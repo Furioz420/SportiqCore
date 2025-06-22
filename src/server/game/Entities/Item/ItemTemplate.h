@@ -20,10 +20,7 @@
 
 #include "SharedDefines.h"
 #include "WorldPacket.h"
-#include "Item.h"
-#include "Player.h"
 #include <unordered_map>
-
 
 enum ItemModType
 {
