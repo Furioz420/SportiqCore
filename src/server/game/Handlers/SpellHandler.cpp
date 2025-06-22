@@ -28,6 +28,7 @@
 #include "SpellMgr.h"
 #include "Totem.h"
 #include "TotemPackets.h"
+#include "TransmogrificationMgr.h"
 #include "Vehicle.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
@@ -796,6 +797,9 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
             else if (Item const* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, *itr))
             {
                 uint32 displayInfoId = item->GetTemplate()->DisplayInfoID;
+                if (uint32 transEntry = sTransmogrificationMgr->GetItemTransmogrification(item->GetGUID().GetCounter()))
+                    if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(transEntry))
+                        displayInfoId = proto->DisplayInfoID;
 
                 sScriptMgr->OnGlobalMirrorImageDisplayItem(item, displayInfoId);
 

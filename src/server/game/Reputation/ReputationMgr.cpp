@@ -384,7 +384,10 @@ bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, fl
 
         if (incremental)
         {
-            stand *= sWorld->getRate(RATE_REPUTATION_GAIN);
+            if (_player->IsPremium())
+                stand *= sWorld->getRate(RATE_VIP_REPUTATION);
+            else
+                stand *= sWorld->getRate(RATE_REPUTATION_GAIN);
         }
 
         int32 standing = 0;

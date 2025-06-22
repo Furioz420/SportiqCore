@@ -19,6 +19,7 @@
 #include "BattlefieldMgr.h"
 #include "CellImpl.h"
 #include "Channel.h"
+#include "Chat.h"
 #include "ChannelMgr.h"
 #include "Formulas.h"
 #include "GameTime.h"
@@ -139,6 +140,41 @@ void Player::Update(uint32 p_time)
         stmt->SetData(3, GetSession()->GetAccountId());
         LoginDatabase.Execute(stmt);
     }
+
+    if (m_vip && m_premiumTimer > 0)
+    {
+        if (p_time >= m_premiumTimer)
+        {
+            time_t currentGameTime = GameTime::GetGameTime().count();
+            time_t unset = GetPremiumUnsetdate();
+            if (unset <= currentGameTime)
+            {
+                SetPremiumStatus(false);
+                SetPremiumUnsetdate(0);
+                AccountMgr::RemoveVipStatus(GetSession()->GetAccountId());
+                ChatHandler(GetSession()).PSendSysMessage(GetSession()->GetAcoreString(LANG_PLAYER_VIP_TIME_EXPIRED));
+            }
+            else
+            {
+                time_t diff = unset - currentGameTime;
+                time_t days = diff / DAY;
+                if (days < 1)
+                {
+                    time_t hours = diff % DAY / HOUR;
+                    if (hours < 1)
+                    {
+                        time_t minutes = diff % HOUR / MINUTE;
+                        if (minutes == 5)
+                            ChatHandler(GetSession()).PSendSysMessage(GetSession()->GetAcoreString(LANG_PLAYER_VIP_TIME_NEAR_END));
+                        if (minutes < 5)
+                            ChatHandler(GetSession()).PSendSysMessage(GetSession()->GetAcoreString(LANG_PLAYER_VIP_TIME_EXIST), (secsToTimeString(diff, true)).c_str());
+                    }
+                }
+                m_premiumTimer = 1000 * MINUTE;
+            }
+        }
+        else
+            m_premiumTimer -= p_time;
 
     if (!m_timedquests.empty())
     {
@@ -766,8 +802,11 @@ bool Player::UpdateGatherSkill(uint32 SkillId, uint32 SkillValue,
               "UpdateGatherSkill(SkillId {} SkillLevel {} RedLevel {})",
               SkillId, SkillValue, RedLevel);
 
-    uint32 gathering_skill_gain =
-        sWorld->getIntConfig(CONFIG_SKILL_GAIN_GATHERING);
+    uint32 gathering_skill_gain = 0;
+    if (IsPremium())
+        gathering_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_GATHERING_VIP);
+    else
+        gathering_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_GATHERING);
     sScriptMgr->OnPlayerUpdateGatheringSkill(this, SkillId, SkillValue, RedLevel + 100, RedLevel + 50, RedLevel + 25, gathering_skill_gain);
 
     // For skinning and Mining chance decrease with level. 1-74 - no decrease,
@@ -844,8 +883,12 @@ bool Player::UpdateCraftSkill(uint32 spellid)
                     learnSpell(discoveredSpell);
             }
 
-            uint32 craft_skill_gain =
-                sWorld->getIntConfig(CONFIG_SKILL_GAIN_CRAFTING);
+            uint32 craft_skill_gain = 0;
+            if (IsPremium())
+                craft_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_CRAFTING_VIP);
+            else
+                craft_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_CRAFTING);
+
             sScriptMgr->OnPlayerUpdateCraftingSkill(this, _spell_idx->second, SkillValue, craft_skill_gain);
 
             return UpdateSkillPro(
