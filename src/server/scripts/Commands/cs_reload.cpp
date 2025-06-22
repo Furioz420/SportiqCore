@@ -170,12 +170,20 @@ public:
             { "waypoint_data",                 HandleReloadWpCommand,                         SEC_ADMINISTRATOR, Console::Yes },
             { "vehicle_accessory",             HandleReloadVehicleAccessoryCommand,           SEC_ADMINISTRATOR, Console::Yes },
             { "vehicle_template_accessory",    HandleReloadVehicleTemplateAccessoryCommand,   SEC_ADMINISTRATOR, Console::Yes },
+            { "shop",                          HandleReloadShop,                              SEC_ADMINISTRATOR, Console::Yes },
         };
         static ChatCommandTable commandTable =
         {
             { "reload", reloadCommandTable }
         };
         return commandTable;
+    }
+
+    static bool HandleReloadShop(ChatHandler* handler)
+    {
+        sWorld->LoadShop();
+        handler->SendGlobalGMSysMessage("All shop tables reloaded.");
+        return true;
     }
 
     //reload commands

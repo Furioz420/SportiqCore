@@ -21,6 +21,7 @@
 
 #include "WorldSession.h"
 #include "AccountMgr.h"
+#include "AddonIO.h"
 #include "BattlegroundMgr.h"
 #include "BanMgr.h"
 #include "CharacterPackets.h"
@@ -144,6 +145,7 @@ WorldSession::WorldSession(uint32 id, std::string&& name, std::shared_ptr<WorldS
 
     _timeSyncNextCounter = 0;
     _timeSyncTimer = 0;
+    _sesionShopUpdate = sWorld->getIntConfig(CONFIG_SHOP_INTERVAL_UPDATE);
 
     if (sock)
     {
@@ -497,6 +499,26 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             else
             {
                 _timeSyncTimer -= diff;
+            }
+        }
+    }
+
+    if (_player && _player->IsInWorld())
+    {
+        if (sWorld->getIntConfig(CONFIG_SHOP_INTERVAL_UPDATE) != 0)
+        {
+            if (_sesionShopUpdate)
+            {
+                if (_sesionShopUpdate <= diff)
+                {
+                    //Async connect to db
+                    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_SHOP_1);
+                    stmt->SetData(0, GetAccountId());
+                    _queryProcessor.AddCallback(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::LoadDonateCurrency, this, std::placeholders::_1)));
+                    _sesionShopUpdate = sWorld->getIntConfig(CONFIG_SHOP_INTERVAL_UPDATE);
+                }
+                else
+                    _sesionShopUpdate -= diff;
             }
         }
     }
@@ -1483,4 +1505,166 @@ void WorldSession::InitializeSessionCallback(CharacterDatabaseQueryHolder const&
     SendAddonsInfo();
     SendClientCacheVersion(clientCacheVersion);
     SendTutorialsData();
+}
+
++
+void WorldSession::LoadAccountStore(PlayerDonate data)
+{
+    if (!this)
+        return;
+    m_balance = data.balance;
+    m_vote = data.vote;
+}
+bool WorldSession::SetAccountCurrency(int32 currency, uint8 moneyid, bool isProfession)
+{
+    if (!this)
+        return false;
+    if (isProfession)
+        return true;
+    if (moneyid == 1)
+    {
+        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_SHOP_BONUS);
+        stmt->SetData(0, GetAccountId());
+        PreparedQueryResult result = LoginDatabase.Query(stmt);
+        if (result)
+        {
+            auto field = result->Fetch();
+            int32 temp = field[0].Get<int32>() - currency;
+            if (temp < 0)
+                return false;
+            else
+                m_balance = temp;
+            LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_STORE_BALANCE);
+            stmt->SetData(0, m_balance);
+            stmt->SetData(1, GetAccountId());
+            LoginDatabase.Execute(stmt);
+            return true;
+        }
+    }
+    else if (moneyid == 2)
+    {
+        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_SHOP_VOTE);
+        stmt->SetData(0, GetAccountId());
+        PreparedQueryResult result = LoginDatabase.Query(stmt);
+        if (result)
+        {
+            auto field = result->Fetch();
+            int32 temp = field[0].Get<int32>() - currency;
+            if (temp < 0)
+                return false;
+            else
+                m_vote = temp;
+            LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_STORE_VOTE);
+            stmt->SetData(0, m_vote);
+            stmt->SetData(1, GetAccountId());
+            LoginDatabase.Execute(stmt);
+            return true;
+        }
+    }
+    else
+        return false;
+    return false;
+}
+bool WorldSession::AddDonateBonusOrVote(int32 currency, uint8 moneyid, bool isProfession)
+{
+    if (!this)
+        return false;
+    if (isProfession)
+        return true;
+    if (moneyid == 1)
+    {
+        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_SHOP_BONUS);
+        stmt->SetData(0, GetAccountId());
+        PreparedQueryResult result = LoginDatabase.Query(stmt);
+        if (result)
+        {
+            auto field = result->Fetch();
+            int32 temp = field[0].Get<int32>() + currency;
+            int32 bonus = field[0].Get<int32>();
+            if (temp < 0)
+                return false;
+            else
+                m_balance = temp;
+            if (bonus < 0)
+                return false;
+            LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_STORE_BALANCE);
+            stmt->SetData(0, m_balance);
+            stmt->SetData(1, GetAccountId());
+            LoginDatabase.Execute(stmt);
+            return true;
+        }
+        else
+        {
+            LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INSERT_STORE_BALANCE);
+            stmt->SetData(0, GetAccountId());
+            stmt->SetData(1, currency);
+            stmt->SetData(2, 0);
+            stmt->SetData(3, 0);
+            stmt->SetData(4, 0);
+            LoginDatabase.Execute(stmt);
+            return true;
+        }
+    }
+    else if (moneyid == 2)
+    {
+        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_SHOP_VOTE);
+        stmt->SetData(0, GetAccountId());
+        PreparedQueryResult result = LoginDatabase.Query(stmt);
+        if (result)
+        {
+            auto field = result->Fetch();
+            int32 temp = field[0].Get<int32>() + currency;
+            if (temp < 0)
+                return false;
+            else
+                m_vote = temp;
+            LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_STORE_VOTE);
+            stmt->SetData(0, m_vote);
+            stmt->SetData(1, GetAccountId());
+            LoginDatabase.Execute(stmt);
+            return true;
+        }
+    }
+    else
+        return false;
+    return false;
+}
+void WorldSession::WritePurchaseToLogs(WorldSession* sess, std::string service, uint32 item, uint32 count, uint32 price, uint32 time)
+{
+    Player* pl = sess->GetPlayer();
+    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_STORE_LOGS);
+    stmt->SetArguments(0, pl->GetGUID());
+    stmt->SetData(1, pl->GetName());
+    stmt->SetData(2, sess->GetAccountId());
+    stmt->SetData(3, service);
+    stmt->SetData(4, item);
+    stmt->SetData(5, count);
+    stmt->SetData(6, price);
+    stmt->SetData(7, time);
+    LoginDatabase.Execute(stmt);
+}
+PlayerDonate WorldSession::FindShopCurrency(uint32 AccountID)
+{
+    PlayerDonate data;
+    data.balance = 0;
+    data.vote = 0;
+    PlayerDonateMap::const_iterator itr = player_donate.find(AccountID);
+    return itr != player_donate.end() ? itr->second : data;
+}
+void WorldSession::LoadDonateCurrency(PreparedQueryResult result)
+{
+    if (result)
+    {
+        PlayerDonate data;
+        auto fields = result->Fetch();
+        if (GetAccountBalance() != fields[0].Get<uint32>() || GetAccountVote() != fields[1].Get<uint32>())
+        {
+            data.balance = fields[0].Get<uint32>();
+            data.vote = fields[1].Get<uint32>();
+            player_donate.insert_or_assign(GetAccountId(), data);
+            FindShopCurrency(GetAccountId());
+            LoadAccountStore(data);
+            sAddonIO->HandleShopBalanceRequest(_player, "");
+        }
+    }
 }

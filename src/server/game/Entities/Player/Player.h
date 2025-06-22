@@ -2051,6 +2051,25 @@ public:
     void BuildPlayerRepop();
     void RepopAtGraveyard();
 
+    bool PlayerAlreadyHasTwoProfessions(const Player* player) const;
+    bool IsSecondarySkill(SkillType skill) const;
+    void LearnSkillRecipesHelper(Player* player, uint32 skill_id);
+    bool LearnAllRecipesInProfession(Player* player, SkillType skill);
+    // Addon IO
+    void SendAddonMessage(const char* message) const;
+    template<typename... Args> void SendAddonMessage(const char* fmt, Args&&... args) const { SendAddonMessage(Acore::StringFormat(fmt, std::forward<Args>(args)...).c_str()); }
+    ObjectGuid GetCurrentTransmogrifier() const { return m_currentTransmogrifier; }
+    void SetCurrentTransmogrifier(ObjectGuid guid) { m_currentTransmogrifier = guid; }
+    void SendAddonMessage(const std::string& message) const { SendAddonMessage(message.c_str()); }
+    // Item level system
+    void CalculateAverageItemLevel();
+    uint16 GetAverageItemLevelAddon() const { return m_averageItemLevel; }
+    // VIP
+    void SetPremiumStatus(bool vipstatus);
+    bool IsPremium() const { return m_vip; }
+    void SetPremiumUnsetdate(time_t unsetdate) { m_unsetdate = unsetdate; }
+    time_t GetPremiumUnsetdate() const { return m_unsetdate; }
+
     void SendDurabilityLoss();
     void DurabilityLossAll(double percent, bool inventory);
     void DurabilityLoss(Item* item, double percent);
@@ -2985,6 +3004,11 @@ private:
 
     std::unique_ptr<PetStable> m_petStable;
 
+    // VIP
+    bool m_vip;                 // Used for VIP func
+    uint32 m_premiumTimer;
+    time_t m_unsetdate;         // time (unixtime) of unsetdate vip previlegies
+
     // Temporary removed pet cache
     uint32 m_temporaryUnsummonedPetNumber;
     uint32 m_oldpetspell;
@@ -3001,6 +3025,11 @@ private:
     uint32 _pendingBindTimer;
 
     uint32 _activeCheats;
+
+    // Transmogrification system
+    ObjectGuid m_currentTransmogrifier;
+    // Item Levels
+    uint16 m_averageItemLevel;
 
     // duel health and mana reset attributes
     uint32 healthBeforeDuel;
