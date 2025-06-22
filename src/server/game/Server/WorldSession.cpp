@@ -1507,7 +1507,6 @@ void WorldSession::InitializeSessionCallback(CharacterDatabaseQueryHolder const&
     SendTutorialsData();
 }
 
-+
 void WorldSession::LoadAccountStore(PlayerDonate data)
 {
     if (!this)
@@ -1515,6 +1514,7 @@ void WorldSession::LoadAccountStore(PlayerDonate data)
     m_balance = data.balance;
     m_vote = data.vote;
 }
+
 bool WorldSession::SetAccountCurrency(int32 currency, uint8 moneyid, bool isProfession)
 {
     if (!this)
@@ -1565,6 +1565,7 @@ bool WorldSession::SetAccountCurrency(int32 currency, uint8 moneyid, bool isProf
         return false;
     return false;
 }
+
 bool WorldSession::AddDonateBonusOrVote(int32 currency, uint8 moneyid, bool isProfession)
 {
     if (!this)
@@ -1629,6 +1630,7 @@ bool WorldSession::AddDonateBonusOrVote(int32 currency, uint8 moneyid, bool isPr
         return false;
     return false;
 }
+
 void WorldSession::WritePurchaseToLogs(WorldSession* sess, std::string service, uint32 item, uint32 count, uint32 price, uint32 time)
 {
     Player* pl = sess->GetPlayer();
@@ -1643,6 +1645,7 @@ void WorldSession::WritePurchaseToLogs(WorldSession* sess, std::string service, 
     stmt->SetData(7, time);
     LoginDatabase.Execute(stmt);
 }
+
 PlayerDonate WorldSession::FindShopCurrency(uint32 AccountID)
 {
     PlayerDonate data;
@@ -1651,6 +1654,7 @@ PlayerDonate WorldSession::FindShopCurrency(uint32 AccountID)
     PlayerDonateMap::const_iterator itr = player_donate.find(AccountID);
     return itr != player_donate.end() ? itr->second : data;
 }
+
 void WorldSession::LoadDonateCurrency(PreparedQueryResult result)
 {
     if (result)
@@ -1664,7 +1668,7 @@ void WorldSession::LoadDonateCurrency(PreparedQueryResult result)
             player_donate.insert_or_assign(GetAccountId(), data);
             FindShopCurrency(GetAccountId());
             LoadAccountStore(data);
-            sAddonIO->HandleShopBalanceRequest(_player, "");
+            sAddonIO->HandleShopBalanceRequest(GetPlayer(), "");
         }
     }
 }

@@ -46,49 +46,48 @@ struct AC_GAME_API CliCommandHolder
 private:
     CliCommandHolder(CliCommandHolder const& right) = delete;
     CliCommandHolder& operator=(CliCommandHolder const& right) = delete;
-
-    struct StoreItemData
-    {
-        uint32 itemEntry;
-        uint32 count;
-        uint32 price;
-        uint8 discount;
-        uint32 discountPrice;
-        uint32 creatureEntry;
-        uint32 storeFlags;
-        uint8 CategoryID;
-        uint8 SubCategoryID;
-        uint8 MoneyID;
-    };
-    struct StoreSpecialOfferData
-    {
-        std::string background;
-        std::string headline;
-        std::string title;
-        std::string description;
-        std::string detailsTitle;
-        uint32 details;
-        uint32 time;
-        uint32 productID;
-        uint32 itemEntry;
-        uint32 price;
-    };
-    struct StoreSpecialOfferDetailsData
-    {
-        uint32 itemID;
-        uint32 role;
-        uint32 count;
-    };
-    struct CollectionMountData
-    {
-        uint32 id;
-        std::string hash;
-        uint8 currency;
-        uint32 price;
-        uint32 productID;
-    };
 };
 
+struct StoreItemData
+{
+    uint32 itemEntry;
+    uint32 count;
+    uint32 price;
+    uint8 discount;
+    uint32 discountPrice;
+    uint32 creatureEntry;
+    uint32 storeFlags;
+    uint8 CategoryID;
+    uint8 SubCategoryID;
+    uint8 MoneyID;
+};
+struct StoreSpecialOfferData
+{
+    std::string background;
+    std::string headline;
+    std::string title;
+    std::string description;
+    std::string detailsTitle;
+    uint32 details;
+    uint32 time;
+    uint32 productID;
+    uint32 itemEntry;
+    uint32 price;
+};
+struct StoreSpecialOfferDetailsData
+{
+    uint32 itemID;
+    uint32 role;
+    uint32 count;
+};
+struct CollectionMountData
+{
+    uint32 id;
+    std::string hash;
+    uint8 currency;
+    uint32 price;
+    uint32 productID;
+};
 // ServerMessages.dbc
 enum ServerMessageType
 {
