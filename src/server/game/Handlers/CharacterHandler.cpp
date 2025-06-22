@@ -16,7 +16,6 @@
  */
 
 #include "AccountMgr.h"
-#include "AddonIO.h"
 #include "AreaDefines.h"
 #include "ArenaTeamMgr.h"
 #include "AuctionHouseMgr.h"
@@ -811,12 +810,6 @@ void WorldSession::HandlePlayerLoginFromDB(LoginQueryHolder const& holder)
         return;
     }
 
-    //Async connect to db
-    LoginDatabasePreparedStatement* stmtShop = LoginDatabase.GetPreparedStatement(LOGIN_SEL_SHOP_1);
-    stmtShop->SetData(0, GetAccountId());
-    _queryProcessor.AddCallback(LoginDatabase.AsyncQuery(stmtShop).WithPreparedCallback(std::bind(&WorldSession::LoadDonateCurrency, this, std::placeholders::_1)));
-
-    sAddonIO->HandleShopItemListRequest(pCurrChar, "");
     pCurrChar->GetMotionMaster()->Initialize();
     pCurrChar->SendDungeonDifficulty(false);
 
@@ -1062,20 +1055,6 @@ void WorldSession::HandlePlayerLoginFromDB(LoginQueryHolder const& holder)
     if (pCurrChar->IsGameMaster())
         ChatHandler(this).SendNotification(LANG_GM_ON);
 
-    bool vip = AccountMgr::GetVipStatus(GetAccountId());
-    if (vip)
-    {
-        time_t unsetdate = AccountMgr::GetVIPunsetDate(GetAccountId());
-        if (GameTime::GetGameTime().count() > unsetdate)
-        {
-            vip = false;
-            AccountMgr::RemoveVipStatus(GetAccountId());
-        }
-        else
-            pCurrChar->SetPremiumUnsetdate(unsetdate);
-    }
-
-    pCurrChar->SetPremiumStatus(vip);
     std::string IP_str = GetRemoteAddress();
     LOG_INFO("entities.player", "Account: {} (IP: {}) Login Character:[{}] ({}) Level: {}",
                   GetAccountId(), IP_str, pCurrChar->GetName(), pCurrChar->GetGUID().ToString(), pCurrChar->GetLevel());

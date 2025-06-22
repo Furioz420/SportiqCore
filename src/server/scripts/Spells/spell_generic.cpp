@@ -33,7 +33,6 @@
 #include "SpellAuraEffects.h"
 #include "SpellScript.h"
 #include "SpellScriptLoader.h"
-#include "TransmogrificationMgr.h"
 #include "Unit.h"
 #include "Vehicle.h"
 #include <array>
@@ -2247,12 +2246,7 @@ class spell_gen_clone_weapon_aura : public AuraScript
                     if (Player* player = caster->ToPlayer())
                     {
                         if (Item* mainItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
-                        {
-                            if (uint32 transEntry = sTransmogrificationMgr->GetItemTransmogrification(mainItem->GetGUID().GetCounter()))
-                                target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, transEntry);
-                            else
-                                target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, mainItem->GetEntry());
-                        }
+                            target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, mainItem->GetEntry());
                     }
                     else
                         target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID));
@@ -2266,12 +2260,7 @@ class spell_gen_clone_weapon_aura : public AuraScript
                     if (Player* player = caster->ToPlayer())
                     {
                         if (Item* offItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
-                        {
-                            if (uint32 transEntry = sTransmogrificationMgr->GetItemTransmogrification(offItem->GetGUID().GetCounter()))
-                                target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, transEntry);
-                            else
-                                target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, offItem->GetEntry());
-                        }
+                            target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, offItem->GetEntry());
                     }
                     else
                         target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1));
@@ -2284,12 +2273,7 @@ class spell_gen_clone_weapon_aura : public AuraScript
                     if (Player* player = caster->ToPlayer())
                     {
                         if (Item* rangedItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
-                        {
-                            if (uint32 transEntry = sTransmogrificationMgr->GetItemTransmogrification(rangedItem->GetGUID().GetCounter()))
-                                target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, transEntry);
-                            else
-                                target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, rangedItem->GetEntry());
-                        }
+                            target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, rangedItem->GetEntry());
                     }
                     else
                         target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2));

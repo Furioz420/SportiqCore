@@ -616,13 +616,6 @@ void CharacterDatabaseConnection::DoPrepareStatements()
         "ON DUPLICATE KEY UPDATE state = VALUES(state)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DELETE_INSTANCE_SAVED_DATA, "DELETE FROM instance_saved_go_state_data WHERE id = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SANITIZE_INSTANCE_SAVED_DATA, "DELETE FROM instance_saved_go_state_data WHERE id NOT IN (SELECT instance.id FROM instance)", CONNECTION_ASYNC);
-
-    // vip
-    PrepareStatement(CHAR_GET_CHARACTERS_ONLINE_ON_ACCOUNT, "SELECT guid FROM characters WHERE online > 0 AND account = ?", CONNECTION_SYNCH);
-
-    // Transmogrification
-    PrepareStatement(CHAR_DEL_TRANSMOGRIFICATION_INFO, "DELETE FROM item_transmogrification WHERE item = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_INS_TRANSMOGRIFICATION_INFO, "INSERT INTO item_transmogrification (item, transEntry) VALUES (?, ?)", CONNECTION_ASYNC);
 }
 
 CharacterDatabaseConnection::CharacterDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

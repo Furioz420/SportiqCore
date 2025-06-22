@@ -78,7 +78,6 @@
 #include "TicketMgr.h"
 #include "Tokenize.h"
 #include "Transport.h"
-#include "TransmogrificationMgr.h"
 #include "UpdateData.h"
 #include "Util.h"
 #include "Vehicle.h"
@@ -286,11 +285,6 @@ Player::Player(WorldSession* session): Unit(true), m_mover(this)
     m_resetTalentsCost = 0;
     m_resetTalentsTime = 0;
     m_itemUpdateQueueBlocked = false;
-
-    /////////////////// VIP System /////////////////////
-    m_premiumTimer = 0;
-    m_vip = false;
-    +m_unsetdate = 0;
 
     for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
         m_forced_speed_changes[i] = 0;
@@ -3962,9 +3956,6 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
         SpellInfo const* learnedSpellInfo = sSpellMgr->GetSpellInfo(trainer_spell->learnedSpell[i]);
         if (learnedSpellInfo && learnedSpellInfo->IsPrimaryProfessionFirstRank() && (GetFreePrimaryProfessionPoints() == 0))
             return TRAINER_SPELL_GREEN_DISABLED;
-
-        if (learnedSpellInfo && learnedSpellInfo->IsPrimaryProfessionFirstRank() && PlayerAlreadyHasTwoProfessions(this))
-            return TRAINER_SPELL_GREEN_DISABLED;
     }
 
     return TRAINER_SPELL_GREEN;
@@ -5847,9 +5838,6 @@ void Player::CheckAreaExploreAndOutdoor()
                     XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level) * sWorld->getRate(RATE_XP_EXPLORE));
                 }
 
-                if (IsPremium())
-                    XP *= sWorld->getRate(RATE_VIP_XP_KILL);
-
                 sScriptMgr->OnPlayerGiveXP(this, XP, nullptr, PlayerXPSource::XPSOURCE_EXPLORE);
                 GiveXP(XP, nullptr);
                 SendExplorationExperience(areaId, XP);
@@ -6210,10 +6198,6 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool awar
     }
 
     honor_f *= sWorld->getRate(RATE_HONOR);
-
-    if (IsPremium())
-        honor_f *= sWorld->getRate(RATE_VIP_HONOR);
-
     // Back to int now
     honor = int32(honor_f);
     // honor - for show honor points in log
@@ -16313,106 +16297,4 @@ std::string Player::GetDebugInfo() const
 void Player::SendSystemMessage(std::string_view msg, bool escapeCharacters)
 {
     ChatHandler(GetSession()).SendSysMessage(msg, escapeCharacters);
-}
-
-void Player::SendAddonMessage(const char* message) const
-{
-    WorldPacket data(SMSG_MESSAGECHAT, 100);
-    uint32 messageLength = (uint32)strlen(message) + 1;
-    data << (uint8)CHAT_MSG_SYSTEM;
-    data << LANG_ADDON;
-    data << GetGUID();
-    data << uint32(0);
-    data << GetGUID();
-    data << messageLength;
-    data << message;
-    data << uint8(0);
-    GetSession()->SendPacket(&data);
-}
-
-bool Player::PlayerAlreadyHasTwoProfessions(const Player* player) const
-{
-    uint32 skillCount = 0;
-    if (player->HasSkill(SKILL_MINING))
-        skillCount++;
-    if (player->HasSkill(SKILL_SKINNING))
-        skillCount++;
-    if (player->HasSkill(SKILL_HERBALISM))
-        skillCount++;
-    if (skillCount >= 2)
-        return true;
-    for (uint32 i = 1; i < sSkillLineStore.GetNumRows(); ++i)
-    {
-        SkillLineEntry const* SkillInfo = sSkillLineStore.LookupEntry(i);
-        if (!SkillInfo)
-            continue;
-        if (SkillInfo->categoryId == SKILL_CATEGORY_SECONDARY)
-            continue;
-        if ((SkillInfo->categoryId != SKILL_CATEGORY_PROFESSION) || !SkillInfo->canLink)
-            continue;
-        const uint32 skillID = SkillInfo->id;
-        if (player->HasSkill(skillID))
-            skillCount++;
-        if (skillCount >= 2)
-            return true;
-    }
-    return false;
-}
-
-bool Player::IsSecondarySkill(SkillType skill) const
-{
-    return skill == SKILL_COOKING || skill == SKILL_FIRST_AID || skill == SKILL_FISHING;
-}
-
-void Player::LearnSkillRecipesHelper(Player* player, uint32 skill_id)
-{
-    uint32 classmask = player->getClassMask();
-    for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
-    {
-        SkillLineAbilityEntry const* skillLine = sSkillLineAbilityStore.LookupEntry(j);
-        if (!skillLine)
-            continue;
-        // wrong skill
-        if (skillLine->SkillLine != skill_id)
-            continue;
-        // not high rank
-        if (skillLine->SupercededBySpell)
-            continue;
-        // skip racial skills
-        if (skillLine->RaceMask != 0)
-            continue;
-        // skip wrong class skills
-        if (skillLine->ClassMask && (skillLine->ClassMask & classmask) == 0)
-            continue;
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(skillLine->Spell);
-        if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo))
-            continue;
-        if (spellInfo->GetEffect(EFFECT_0).Effect == SPELL_EFFECT_CREATE_ITEM || spellInfo->GetEffect(EFFECT_0).Effect == SPELL_EFFECT_CREATE_ITEM_2)
-            if (uint32 item = spellInfo->GetEffect(EFFECT_0).ItemType)
-                continue;
-        if (spellInfo->GetEffect(EFFECT_0).Effect == SPELL_EFFECT_ENCHANT_ITEM)
-            continue;
-        player->learnSpell(skillLine->Spell);
-    }
-}
-
-bool Player::LearnAllRecipesInProfession(Player* player, SkillType skill)
-{
-    ChatHandler handler(player->GetSession());
-    SkillLineEntry const* SkillInfo = sSkillLineStore.LookupEntry(skill);
-    if (!SkillInfo)
-        return false;
-    LearnSkillRecipesHelper(player, SkillInfo->id);
-    uint16 maxLevel = player->GetPureMaxSkillValue(SkillInfo->id);
-    player->SetSkill(SkillInfo->id, player->GetSkillStep(SkillInfo->id), maxLevel, maxLevel);
-    return true;
-}
-
-void Player::SetPremiumStatus(bool vipstatus)
-{
-    m_vip = vipstatus;
-    if (m_vip)
-        m_premiumTimer = 1000 * MINUTE;
-    else
-        m_premiumTimer = 0;
 }

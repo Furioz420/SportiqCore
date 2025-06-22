@@ -46,47 +46,6 @@ struct AC_GAME_API CliCommandHolder
 private:
     CliCommandHolder(CliCommandHolder const& right) = delete;
     CliCommandHolder& operator=(CliCommandHolder const& right) = delete;
-
-    struct StoreItemData
-    {
-        uint32 itemEntry;
-        uint32 count;
-        uint32 price;
-        uint8 discount;
-        uint32 discountPrice;
-        uint32 creatureEntry;
-        uint32 storeFlags;
-        uint8 CategoryID;
-        uint8 SubCategoryID;
-        uint8 MoneyID;
-    };
-    struct StoreSpecialOfferData
-    {
-        std::string background;
-        std::string headline;
-        std::string title;
-        std::string description;
-        std::string detailsTitle;
-        uint32 details;
-        uint32 time;
-        uint32 productID;
-        uint32 itemEntry;
-        uint32 price;
-    };
-    struct StoreSpecialOfferDetailsData
-    {
-        uint32 itemID;
-        uint32 role;
-        uint32 count;
-    };
-    struct CollectionMountData
-    {
-        uint32 id;
-        std::string hash;
-        uint8 currency;
-        uint32 price;
-        uint32 productID;
-    };
 };
 
 // ServerMessages.dbc
@@ -221,19 +180,6 @@ enum WorldBoolConfigs
     CONFIG_ALLOWS_RANK_MOD_FOR_PET_HEALTH,
     CONFIG_MUNCHING_BLIZZLIKE,
     CONFIG_ENABLE_DAZE,
-    CONFIG_SHOP_ENABLE,
-    CONFIG_VIP_DEBUFF,
-    CONFIG_VIP_BANK,
-    CONFIG_VIP_MAIL,
-    CONFIG_VIP_REPAIR,
-    CONFIG_VIP_RESET_TALENTS,
-    CONFIG_VIP_TAXI,
-    CONFIG_VIP_HOME,
-    CONFIG_VIP_CHANGE_RACE,
-    CONFIG_VIP_CUSTOMIZE,
-    CONFIG_VIP_CAPITAL,
-    CONFIG_VIP_APPEAR,
-    CONFIG_VIP_ALL_DISABLED,
     CONFIG_SPELL_QUEUE_ENABLED,
     BOOL_CONFIG_VALUE_COUNT
 };
@@ -323,8 +269,6 @@ enum WorldIntConfigs
     CONFIG_SKILL_CHANCE_MINING_STEPS,
     CONFIG_SKILL_CHANCE_SKINNING_STEPS,
     CONFIG_SKILL_GAIN_CRAFTING,
-    CONFIG_SKILL_GAIN_CRAFTING_VIP,
-    CONFIG_SKILL_GAIN_GATHERING_VIP,
     CONFIG_SKILL_GAIN_DEFENSE,
     CONFIG_SKILL_GAIN_GATHERING,
     CONFIG_SKILL_GAIN_WEAPON,
@@ -479,7 +423,6 @@ enum WorldIntConfigs
     CONFIG_CHANGE_FACTION_MAX_MONEY,
     CONFIG_WATER_BREATH_TIMER,
     CONFIG_DAILY_RBG_MIN_LEVEL_AP_REWARD,
-    CONFIG_SHOP_INTERVAL_UPDATE,
     CONFIG_AUCTIONHOUSE_WORKERTHREADS,
     CONFIG_SPELL_QUEUE_WINDOW,
     CONFIG_SUNSREACH_COUNTER_MAX,
@@ -585,10 +528,6 @@ enum Rates
     RATE_MOVESPEED_NPC,
     RATE_MISS_CHANCE_MULTIPLIER_TARGET_CREATURE,
     RATE_MISS_CHANCE_MULTIPLIER_TARGET_PLAYER,
-    RATE_VIP_XP_KILL,
-    RATE_VIP_XP_QUEST,
-    RATE_VIP_HONOR,
-    RATE_VIP_REPUTATION,
     MAX_RATES
 };
 
@@ -644,21 +583,6 @@ public:
     [[nodiscard]] virtual std::string const& GetRealmName() const = 0;
     virtual void SetRealmName(std::string name) = 0;
     virtual void RemoveOldCorpses() = 0;
-
-    void LoadShop();
-    uint32 GetStoreItems() { return shop_count; };
-    std::multimap<int32, StoreItemData> GetStoreItem() { return itemdata_map; }
-    std::multimap<int32, StoreSpecialOfferData> GetStoreSpecialOffer() { return specialoffer_map; }
-    std::multimap<int32, StoreSpecialOfferDetailsData> GetStoreSpecialDetails() { return specialofferdetails_map; }
-    std::multimap<int32, CollectionMountData> GetStorCollection() { return collection_map; }
-    uint32 GetShopVersion() { return m_version; }
-    uint32 m_shopUpdate = 0;
-    uint32 m_version = 0;
-    uint32 shop_count = 0;
-    std::multimap<int32, StoreItemData> itemdata_map;
-    std::multimap<int32, StoreSpecialOfferData> specialoffer_map;
-    std::multimap<int32, StoreSpecialOfferDetailsData> specialofferdetails_map;
-    std::multimap<int32, CollectionMountData> collection_map;
 };
 
 #endif //AZEROTHCORE_IWORLD_H

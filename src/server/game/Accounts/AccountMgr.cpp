@@ -317,49 +317,4 @@ namespace AccountMgr
         return gmlevel == SEC_CONSOLE;
     }
 
-    uint32 GetGuidOfOnlineCharacter(uint32 accountId)
-    {
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_GET_CHARACTERS_ONLINE_ON_ACCOUNT);
-        stmt->SetData(0, accountId);
-        PreparedQueryResult result = CharacterDatabase.Query(stmt);
-        return (result) ? (*result)[0].Get<uint32>() : 0;
-    }
-    time_t GetVIPunsetDate(uint32 accountId)
-    {
-        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_PREMIUM_UNSETDATE_BY_ID);
-        stmt->SetData(0, accountId);
-        PreparedQueryResult result = LoginDatabase.Query(stmt);
-        return (result) ? (*result)[0].Get<uint64>() : 0;
-    }
-    bool GetVipStatus(uint32 accountId)
-    {
-        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_PREMIUM_STATUS_BY_ID);
-        stmt->SetData(0, accountId);
-        PreparedQueryResult result = LoginDatabase.Query(stmt);
-        if (result)
-            return true;
-        return false;
-    }
-    void SetVipStatus(uint32 accountId, time_t unsetdate)
-    {
-        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SET_ACCOUNT_PREMIUM);
-        stmt->SetData(0, accountId);
-        stmt->SetData(1, unsetdate);
-        stmt->SetData(2, true);
-        LoginDatabase.Execute(stmt);
-    }
-    void RemoveVipStatus(uint32 accountId)
-    {
-        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_ACCOUNT_PREMIUM);
-        stmt->SetData(0, accountId);
-        LoginDatabase.Execute(stmt);
-    }
-    void UpdateVipStatus(uint32 accountId, time_t unsetdata)
-    {
-        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_ACCOUNT_PREMIUM);
-        stmt->SetData(0, unsetdata);
-        stmt->SetData(1, accountId);
-        LoginDatabase.Execute(stmt);
-    }
-
 } // Namespace AccountMgr

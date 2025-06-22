@@ -16,7 +16,6 @@
  */
 
 #include "AccountMgr.h"
-#include "AddonIO.h"
 #include "CellImpl.h"
 #include "ChannelMgr.h"
 #include "Chat.h"
@@ -345,7 +344,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
 
     else
     {
-        sAddonIO->HandleMessage(sender, msg);
         ++_addonMessageReceiveCount;
     }
 

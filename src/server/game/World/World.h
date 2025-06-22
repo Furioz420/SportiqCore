@@ -305,8 +305,6 @@ private:
 
     bool _isClosed;
 
-    uint32 m_shopUpdate = 0;
-
     IntervalTimer _timers[WUPDATE_COUNT];
     Seconds _mail_expire_check_timer;
 
