@@ -20,10 +20,9 @@
 
 #include "SharedDefines.h"
 #include "WorldPacket.h"
-#include "Item.h"
-#include "Player.h"
 #include <unordered_map>
 
+class Player;
 
 enum ItemModType
 {
@@ -618,6 +617,7 @@ struct _Socket
 #define MAX_ITEM_PROTO_SPELLS  5
 #define MAX_ITEM_PROTO_STATS  10
 
+
 struct ItemTemplate
 {
     uint32 ItemId;
@@ -782,81 +782,6 @@ struct ItemTemplate
                 break;
         }
         return std::max<float>(0.f, itemLevel);
-    }
-
-    [[nodiscard]] bool IsAllowableToEquipFor(Player* player) const
-    {
-        if (player->CanUseItem(this) != EQUIP_ERR_OK)
-            return false;
-        if (Class == ITEM_CLASS_WEAPON)
-        {
-            uint32 skill = GetSkill();
-            if (player->GetSkillValue(skill) == 0)
-                return false;
-        }
-        else if (Class == ITEM_CLASS_ARMOR)
-        {
-            if ((Flags2 & ITEM_FLAG2_FACTION_HORDE && player->GetTeamId(true) == ALLIANCE) || (Flags2 == ITEM_FLAG2_FACTION_ALLIANCE && player->GetTeamId(true) == HORDE))
-                return false;
-            if (uint32 skill = GetSkill())
-            {
-                bool allowEquip = false;
-                // Armor that is binded to account can "morph" from plate to mail, etc. if skill is not learned yet.
-                if (Quality == ITEM_QUALITY_HEIRLOOM && !player->HasSkill(skill))
-                {
-                    switch (player->getClass())
-                    {
-                    case CLASS_HUNTER:
-                    case CLASS_SHAMAN:
-                        allowEquip = (skill == SKILL_MAIL);
-                        break;
-                    case CLASS_PALADIN:
-                    case CLASS_WARRIOR:
-                        allowEquip = (skill == SKILL_PLATE_MAIL);
-                        break;
-                    }
-                }
-                if (!allowEquip && player->GetSkillValue(skill) == 0)
-                    return false;
-            }
-        }
-        if (InventoryType == INVTYPE_RELIC)
-        {
-            bool allowEquip = false;
-            switch (player->getClass())
-            {
-            case CLASS_DRUID:
-                allowEquip = SubClass == ITEM_SUBCLASS_ARMOR_IDOL;
-                break;
-            case CLASS_SHAMAN:
-                allowEquip = SubClass == ITEM_SUBCLASS_ARMOR_TOTEM;
-                break;
-            case CLASS_PALADIN:
-                allowEquip = SubClass == ITEM_SUBCLASS_ARMOR_LIBRAM;
-                break;
-            case CLASS_DEATH_KNIGHT:
-                allowEquip = SubClass == ITEM_SUBCLASS_ARMOR_SIGIL;
-                break;
-            }
-            if (!allowEquip)
-                return false;
-        }
-        if (InventoryType == INVTYPE_RANGED)
-        {
-            bool allowEquip = true;
-            switch (player->getClass())
-            {
-            case CLASS_DRUID:
-            case CLASS_SHAMAN:
-            case CLASS_PALADIN:
-            case CLASS_DEATH_KNIGHT:
-                allowEquip = false;
-                break;
-            }
-            if (!allowEquip)
-                return false;
-        }
-        return true;
     }
 
     [[nodiscard]] uint32 GetSkill() const

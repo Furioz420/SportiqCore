@@ -33,6 +33,7 @@
 #include "GameGraveyard.h"
 #include "GridNotifiersImpl.h"
 #include "GroupMgr.h"
+#include "Guild.h"
 #include "MapMgr.h"
 #include "MiscPackets.h"
 #include "Object.h"
@@ -882,12 +883,32 @@ void Battleground::EndBattleground(PvPTeamId winnerTeamId)
                     player->SetRandomWinner(true);
             }
 
+            if (sWorld->getBoolConfig(CONFIG_GUILD_SYSTEM_REWARD_BG))
+            {
+                if (Guild* guild = player->GetGuild())
+                {
+                    auto xp_winner_count = sWorld->getIntConfig(CONFIG_GUILD_SYSTEM_BG_REWARD_WINNERCOUNT);
+                    if (xp_winner_count > 0)
+                        guild->GiveXp(xp_winner_count);
+                }
+            }
+
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_BG, player->GetMapId());
         }
         else
         {
             if (IsRandom() || BattlegroundMgr::IsBGWeekend(GetBgTypeID(true)))
                 UpdatePlayerScore(player, SCORE_BONUS_HONOR, GetBonusHonorFromKill(loser_kills));
+
+            if (sWorld->getBoolConfig(CONFIG_GUILD_SYSTEM_REWARD_BG))
+            {
+                if (Guild* guild = player->GetGuild())
+                {
+                    auto xp_loser_count = sWorld->getIntConfig(CONFIG_GUILD_SYSTEM_BG_REWARD_LOSERCOUNT);
+                    if (xp_loser_count > 0)
+                        guild->GiveXp(xp_loser_count);
+                }
+            }
         }
 
         sScriptMgr->OnBattlegroundEndReward(this, player, GetTeamId(winnerTeamId));

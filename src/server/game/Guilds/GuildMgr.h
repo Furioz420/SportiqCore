@@ -41,11 +41,21 @@ public:
     uint32 GenerateGuildId();
     void SetNextGuildId(uint32 Id) { NextGuildId = Id; }
 
+    void InitAutomaticGuildXPDistribution();
+    uint32 GetGuildAutoDistibutionChecker() const { return m_GuildAutoDistributionTimeChecker; };
+    time_t GetGuildNextPeriodicUpdateTime() const { return m_NextGuildPeriodicQueueUpdateTime; };
+    void SetGuildAutoDistibutionChecker(uint32 val) { m_GuildAutoDistributionTimeChecker = val; }
+    void SetGuildNextPeriodicUpdateTime(time_t val) { m_NextGuildPeriodicQueueUpdateTime = val; }
+
+    void DistributeGuildXP();
     void ResetTimes();
 protected:
     typedef std::unordered_map<uint32, Guild*> GuildContainer;
     uint32 NextGuildId;
     GuildContainer GuildStore;
+
+    uint32 m_GuildAutoDistributionTimeChecker;
+    time_t m_NextGuildPeriodicQueueUpdateTime;
 };
 
 #define sGuildMgr GuildMgr::instance()

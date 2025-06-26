@@ -43,7 +43,6 @@
 #include "WorldSession.h"
 #include <string>
 #include <vector>
-#include <Item.h>
 
 struct CreatureTemplate;
 struct Mail;
@@ -1304,6 +1303,8 @@ public:
     InventoryResult CanStoreItems(Item** pItem, int32 count) const;
     InventoryResult CanEquipNewItem(uint8 slot, uint16& dest, uint32 item, bool swap) const;
     InventoryResult CanEquipItem(uint8 slot, uint16& dest, Item* pItem, bool swap, bool not_loading = true) const;
+
+    [[nodiscard]] bool IsAllowableToEquipFor(ItemTemplate const* proto) const;
 
     InventoryResult CanEquipUniqueItem(Item* pItem, uint8 except_slot = NULL_SLOT, uint32 limit_count = 1) const;
     InventoryResult CanEquipUniqueItem(ItemTemplate const* itemProto, uint8 except_slot = NULL_SLOT, uint32 limit_count = 1) const;

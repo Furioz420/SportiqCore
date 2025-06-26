@@ -18,6 +18,7 @@
 #include "Arena.h"
 #include "ArenaTeamMgr.h"
 #include "GroupMgr.h"
+#include "Guild.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "Pet.h"
@@ -356,6 +357,16 @@ void Arena::EndBattleground(TeamId winnerTeamId)
                         }
 
                         winnerArenaTeam->MemberWon(player, loserMatchmakerRating, winnerMatchmakerChange);
+
+                        if (sWorld->getBoolConfig(CONFIG_GUILD_SYSTEM_REWARD_ARENA))
+                        {
+                            if (Guild* guild = player->GetGuild())
+                            {
+                                auto xp_winner_count = sWorld->getIntConfig(CONFIG_GUILD_SYSTEM_ARENA_REWARD_WINNERCOUNT);
+                                if (xp_winner_count > 0)
+                                    guild->GiveXp(xp_winner_count);
+                            }
+                        }
                     }
                 }
                 else
@@ -364,6 +375,16 @@ void Arena::EndBattleground(TeamId winnerTeamId)
 
                     // Arena lost => reset the win_rated_arena having the "no_lose" condition
                     player->ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE, 0);
+
+                    if (sWorld->getBoolConfig(CONFIG_GUILD_SYSTEM_REWARD_ARENA))
+                    {
+                        if (Guild* guild = player->GetGuild())
+                        {
+                            auto xp_loser_count = sWorld->getIntConfig(CONFIG_GUILD_SYSTEM_ARENA_REWARD_LOSERCOUNT);
+                            if (xp_loser_count > 0)
+                                guild->GiveXp(xp_loser_count);
+                        }
+                    }
                 }
 
                 player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_PLAY_ARENA, GetMapId());

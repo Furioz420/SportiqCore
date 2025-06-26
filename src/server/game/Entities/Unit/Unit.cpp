@@ -39,6 +39,7 @@
 #include "GameTime.h"
 #include "GridNotifiersImpl.h"
 #include "Group.h"
+#include "Guild.h"
 #include "Log.h"
 #include "MapMgr.h"
 #include "MoveSpline.h"
@@ -17843,6 +17844,33 @@ void Unit::Kill(Unit* killer, Unit* victim, bool durabilityLoss, WeaponAttackTyp
             if (creature->GetLootMode())
                 loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
 
+            if (sWorld->getBoolConfig(CONFIG_GUILD_SYSTEM_REWARD_ONCREATUREKILL))
+            {
+                if (!sGuildXPOnKill.empty())
+                {
+                    for (auto itr = sGuildXPOnKill.begin(); itr != sGuildXPOnKill.end(); ++itr)
+                    {
+                        if (itr->first == creature->GetEntry())
+                        {
+                            uint32 XP = itr->second;
+                            if (Group* gr = player->GetGroup())
+                            {
+                                for (GroupReference* itrg = gr->GetFirstMember(); itrg != NULL; itrg = itrg->next())
+                                    if (Player* member = itrg->GetSource())
+                                        if (Guild* guild = member->GetGuild())
+                                        {
+                                            if (member->IsAtGroupRewardDistance(creature))
+                                                guild->GiveXp(XP);
+                                        }
+                            }
+                            else
+                                if (Guild* guild = player->GetGuild())
+                                    guild->GiveXp(XP);
+                        }
+                    }
+                }
+            }
+
             if (group)
             {
                 if (hasLooterGuid)
@@ -17957,6 +17985,21 @@ void Unit::Kill(Unit* killer, Unit* victim, bool durabilityLoss, WeaponAttackTyp
         // Call KilledUnit for creatures
         if (killer && killer->IsCreature() && killer->IsAIEnabled)
             killer->ToCreature()->AI()->KilledUnit(victim);
+
+        if (player)
+        {
+            if (sWorld->getBoolConfig(CONFIG_GUILD_SYSTEM_REWARD_ONPLAYERKILL))
+            {
+                if (player != plrVictim && !plrVictim->InBattleground() && !plrVictim->InArena() && player->isHonorOrXPTarget(victim))
+                {
+                    if (Guild* guild = player->GetGuild())
+                    {
+                        uint32 xp = sWorld->getIntConfig(CONFIG_GUILD_SYSTEM_ONPLAYERKILL_REWARD);
+                        guild->GiveXp(xp);
+                    }
+                }
+            }
+        }
 
         // last damage from non duel opponent or opponent controlled creature
         if (plrVictim->duel)

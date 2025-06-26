@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Addon messages IO
  * for client-server interface
  */
@@ -221,7 +221,7 @@ uint8 ShopPaidService(Player* player, uint32 itemId, uint32 count, uint8 moneyID
     auto sess = player->GetSession();
     uint8 p_resp = 0;
 
-    bool vip = sWorld->GetVipStatus(player->GetSession()->GetAccountId());
+    bool vip = AccountMgr::GetVipStatus(player->GetSession()->GetAccountId());
 
     if (!player->GetSession()->SetAccountCurrency(cost, moneyID, isProfession))
         p_resp = 1;
@@ -423,13 +423,13 @@ uint8 ShopPaidService(Player* player, uint32 itemId, uint32 count, uint8 moneyID
             if (vip)
             {
                 player->SetPremiumUnsetdate(TIME_STORE_PREMIUM_BUY_1 + player->GetPremiumUnsetdate());
-                sWorld->UpdateVipStatus(player->GetSession()->GetAccountId(), TIME_STORE_PREMIUM_BUY_1 + player->GetPremiumUnsetdate());
+                AccountMgr::UpdateVipStatus(player->GetSession()->GetAccountId(), TIME_STORE_PREMIUM_BUY_1 + player->GetPremiumUnsetdate());
                 player->SetPremiumStatus(true);
             }
             else
             {
                 player->SetPremiumUnsetdate(TIME_STORE_PREMIUM_BUY_1 + time(nullptr));
-                sWorld->SetVipStatus(player->GetSession()->GetAccountId(), TIME_STORE_PREMIUM_BUY_1 + time(nullptr));
+                AccountMgr::SetVipStatus(player->GetSession()->GetAccountId(), TIME_STORE_PREMIUM_BUY_1 + time(nullptr));
                 player->SetPremiumStatus(true);
             }
             break;
@@ -484,6 +484,8 @@ void AddonIO::HandleMessage(Player* player, std::string message)
 ********* HANDLERS ***********
 ******************************/
 
+//Shop below
+
 void AddonIO::HandleShopBalanceRequest(Player* player, std::string /*body*/)
 {
     if (!player)
@@ -491,7 +493,15 @@ void AddonIO::HandleShopBalanceRequest(Player* player, std::string /*body*/)
 
     auto sess = player->GetSession();
 
-    player->SendAddonMessage("ASMSG_SHOP_BALANCE_RESPONSE\t%d:%d:%d:%d:%d:%d:%d", sess->GetAccountBalance(), sess->GetAccountVote(), 0, 0, 0, 0, 0);
+    LOG_ERROR("shop", "Sending ASMSG_SHOP_BALANCE_RESPONSE: {}:{}:{}:{}:{}:{}:{}",
+        sess->GetAccountBalance(), sess->GetAccountVote(), 0, 0, 0, 0, 0);
+
+    //outdated, sends %d
+    //player->SendAddonMessage("ASMSG_SHOP_BALANCE_RESPONSE\t%d:%d:%d:%d:%d:%d:%d", sess->GetAccountBalance(), sess->GetAccountVote(), 0, 0, 0, 0, 0);
+
+    player->SendAddonMessage(fmt::format("ASMSG_SHOP_BALANCE_RESPONSE\t{}:{}:{}:{}:{}:{}:{}",
+        sess->GetAccountBalance(), sess->GetAccountVote(), 0, 0, 0, 0, 0));
+
 }
 
 void AddonIO::HandleShopItemListRequest(Player* player, std::string /*body*/)
@@ -529,7 +539,17 @@ void AddonIO::HandleShopItemListRequest(Player* player, std::string /*body*/)
                         continue;
                 }
 
-                player->SendAddonMessage("ASMSG_SHOP_ITEM\t%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d", it->first, it->second.itemEntry, it->second.count, it->second.price, it->second.discount, it->second.discountPrice, it->second.creatureEntry, it->second.storeFlags, it->second.CategoryID, it->second.SubCategoryID, it->second.MoneyID);
+                LOG_ERROR("shop", "Sending ASMSG_SHOP_ITEM for itemId {} to player {}", it->second.itemEntry, player->GetName());
+
+                //Outdated sends %d
+                //player->SendAddonMessage("ASMSG_SHOP_ITEM\t%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d", it->first, it->second.itemEntry, it->second.count, it->second.price, it->second.discount, it->second.discountPrice, it->second.creatureEntry, it->second.storeFlags, it->second.CategoryID, it->second.SubCategoryID, it->second.MoneyID);
+
+                player->SendAddonMessage(fmt::format("ASMSG_SHOP_ITEM\t{}:{}:{}:{}:{}:{}:{}:{}:{}:{}:{}",
+                    it->first, it->second.itemEntry, it->second.count, it->second.price,
+                    it->second.discount, it->second.discountPrice, it->second.creatureEntry,
+                    it->second.storeFlags, it->second.CategoryID, it->second.SubCategoryID,
+                    it->second.MoneyID));
+
             }
         }
 
@@ -542,7 +562,14 @@ void AddonIO::HandleShopVersionRequest(Player* player, std::string /*body*/)
     if (!player)
         return;
 
-    player->SendAddonMessage("ASMSG_SHOP_VERSION\t%d:%d", sWorld->GetShopVersion(), sWorld->getBoolConfig(CONFIG_SHOP_ENABLE) ? 1 : 0);
+    LOG_ERROR("shop", "Sending ASMSG_SHOP_VERSION: {}:{}", sWorld->GetShopVersion(), sWorld->getBoolConfig(CONFIG_SHOP_ENABLE) ? 1 : 0);
+
+    //Outdated sends %d:%d
+    //player->SendAddonMessage("ASMSG_SHOP_VERSION\t%d:%d", sWorld->GetShopVersion(), sWorld->getBoolConfig(CONFIG_SHOP_ENABLE) ? 1 : 0);
+
+    player->SendAddonMessage(fmt::format("ASMSG_SHOP_VERSION\t{}:{}",
+        sWorld->GetShopVersion(), sWorld->getBoolConfig(CONFIG_SHOP_ENABLE) ? 1 : 0));
+
 }
 
 void AddonIO::HandleShopBuyItemRequest(Player* player, std::string body)
@@ -689,7 +716,10 @@ void AddonIO::HandleShopBuyItemRequest(Player* player, std::string body)
                 }
         }
 
-        player->SendAddonMessage("ASMSG_SHOP_BUY_ITEM_RESPONSE\t%u:%d", p_resp, item);
+        LOG_ERROR("shop", "Sending ASMSG_SHOP_BUY_ITEM_RESPONSE: {}:{}", p_resp, item);
+
+        player->SendAddonMessage(fmt::format("ASMSG_SHOP_BUY_ITEM_RESPONSE\t{}:{}", p_resp, item));
+
     }
     catch (std::exception /*ex*/)
     {
@@ -745,15 +775,32 @@ void AddonIO::HandleShopItemCountRequest(Player* player, std::string /*body*/)
     if (!sWorld->getBoolConfig(CONFIG_SHOP_ENABLE))
         return;
 
-    player->SendAddonMessage("ASMSG_SHOP_ITEM_COUNT\t%d", sWorld->GetStoreItems());
+    LOG_ERROR("shop", "Sending ASMSG_SHOP_ITEM_COUNT: {}", sWorld->GetStoreItems());
+
+    //Old (sends %d literally)
+    //player->SendAddonMessage("ASMSG_SHOP_ITEM_COUNT\t%d", sWorld->GetStoreItems());
+
+    player->SendAddonMessage(fmt::format("ASMSG_SHOP_ITEM_COUNT\t{}",
+        sWorld->GetStoreItems()));
+
 }
+
+//Premium below
 
 void AddonIO::HandlePremiumInfoRequest(Player* player, std::string /*body*/)
 {
     if (!player)
         return;
 
-    player->SendAddonMessage("ASMSG_PREMIUM_INFO_RESPONSE\t%d", player->IsPremium() ? (player->GetPremiumUnsetdate() - uint32(time(nullptr))) : 0);
+    int remaining = player->IsPremium() ? (player->GetPremiumUnsetdate() - uint32(time(nullptr))) : 0;
+
+    LOG_ERROR("shop", "Sending ASMSG_PREMIUM_INFO_RESPONSE: {}", remaining);
+
+    //Outdated sends %d
+    //player->SendAddonMessage("ASMSG_PREMIUM_INFO_RESPONSE\t%d", remaining);
+
+    player->SendAddonMessage(fmt::format("ASMSG_PREMIUM_INFO_RESPONSE\t{}", remaining));
+
 }
 
 void AddonIO::HandlePremiumRenewRequest(Player* player, std::string body)
@@ -795,17 +842,17 @@ void AddonIO::HandlePremiumRenewRequest(Player* player, std::string body)
         {
             if (sess->SetAccountCurrency(cost, 1, false))
             {
-                bool vip = sWorld->GetVipStatus(sess->GetAccountId());
+                bool vip = AccountMgr::GetVipStatus(sess->GetAccountId());
                 if (vip)
                 {
                     player->SetPremiumUnsetdate(prem_time + player->GetPremiumUnsetdate());
-                    sWorld->UpdateVipStatus(sess->GetAccountId(), prem_time + player->GetPremiumUnsetdate());
+                    AccountMgr::UpdateVipStatus(sess->GetAccountId(), prem_time + player->GetPremiumUnsetdate());
                     player->SetPremiumStatus(true);
                 }
                 else
                 {
                     player->SetPremiumUnsetdate(prem_time + time(nullptr));
-                    sWorld->SetVipStatus(sess->GetAccountId(), prem_time + time(nullptr));
+                    AccountMgr::SetVipStatus(sess->GetAccountId(), prem_time + time(nullptr));
                     player->SetPremiumStatus(true);
                 }
             }
@@ -815,7 +862,12 @@ void AddonIO::HandlePremiumRenewRequest(Player* player, std::string body)
             p_resp = 0; //ok
         }
 
-        player->SendAddonMessage("ASMSG_PREMIUM_RENEW_RESPONSE\t%u", p_resp);
+        LOG_ERROR("shop", "Sending ASMSG_PREMIUM_RENEW_RESPONSE: {}", p_resp);
+
+        //Outdated sends %d
+        //player->SendAddonMessage("ASMSG_PREMIUM_RENEW_RESPONSE\t%u", p_resp);
+
+        player->SendAddonMessage(fmt::format("ASMSG_PREMIUM_RENEW_RESPONSE\t{}", p_resp));
 
     }
     catch (std::exception /*ex*/)
@@ -824,6 +876,8 @@ void AddonIO::HandlePremiumRenewRequest(Player* player, std::string body)
     }
 
 }
+
+//Transmog below
 
 void AddonIO::HandleTransmogrificationInfoRequest(Player* player, std::string body)
 {
@@ -940,6 +994,8 @@ void AddonIO::HandleTransmogrificationApply(Player* player, std::string body)
     sTransmogrificationMgr->HandleTransmogrificationApplyRequestFrom(player, data);
 }
 
+//GUILD BELOW
+
 void AddonIO::HandleGuildSpellsRequest(Player* player, std::string /*body*/)
 {
     if (!player)
@@ -950,6 +1006,9 @@ void AddonIO::HandleGuildSpellsRequest(Player* player, std::string /*body*/)
         std::string response = "ASMSG_GUILD_SPELLS_RESPONSE\t";
         for (auto it = sGuildPerkSpellsStore.begin(); it != sGuildPerkSpellsStore.end(); ++it)
             response += std::to_string(it->second) + ":" + std::to_string(it->first) + ",";
+
+        LOG_ERROR("guild", "Sending Guild Spell Response: {}", response);
+
         player->SendAddonMessage(response.c_str());
     }
 }
@@ -968,7 +1027,15 @@ void AddonIO::HandleGuildLevelRequest(Player* player, std::string /*body*/)
         uint32 xp = guild->GetCurrentXP() - xp_for_old_lvl;
         uint32 dailyCap = sWorld->getIntConfig(CONFIG_GUILD_DAILY_XP_CAP);
 
-        player->SendAddonMessage("ASMSG_GUILD_LEVEL_INFO\t%d:%d:%d:%d:%d", guild->GetLevel(), xp, totalxp, guild->GetGuildTodayXP(), dailyCap);
+        //player->SendAddonMessage("ASMSG_GUILD_LEVEL_INFO\t%d:%d:%d:%d:%d", guild->GetLevel(), xp, totalxp, guild->GetGuildTodayXP(), dailyCap);
+        //Rewriting line above , testing with buffer
+        std::string message = fmt::format("ASMSG_GUILD_LEVEL_INFO\t{}:{}:{}:{}:{}",
+            guild->GetLevel(), xp, totalxp, guild->GetGuildTodayXP(), dailyCap);
+
+        LOG_ERROR("guild", "Sent HandleGuildLevelRequest message: {}", message);
+
+        player->SendAddonMessage(message);
+
     }
 }
 
@@ -978,7 +1045,19 @@ void AddonIO::HandleGuildOnlineRequest(Player* player, std::string /*body*/)
         return;
 
     if (Guild* guild = player->GetGuild())
-        player->SendAddonMessage("ASMSG_GUILD_PLAYERS_COUNT\t%d:%d", guild->GetOnlineMembers(), guild->GetMemberCount());
+    {
+        int online = guild->GetOnlineMembers();
+        int total = guild->GetMemberCount();
+
+        LOG_ERROR("guild", "Sending ASMSG_GUILD_PLAYERS_COUNT: {}:{}", online, total);
+
+        //Outdated sends %d:%d
+        //player->SendAddonMessage("ASMSG_GUILD_PLAYERS_COUNT\t%d:%d", online, total);
+
+        player->SendAddonMessage(fmt::format("ASMSG_GUILD_PLAYERS_COUNT\t{}:{}",
+            guild->GetOnlineMembers(), guild->GetMemberCount()));
+
+    }
 }
 
 void AddonIO::HandleGuildIlvlsRequest(Player* player, std::string /*body*/)
@@ -993,6 +1072,8 @@ void AddonIO::HandleGuildIlvlsRequest(Player* player, std::string /*body*/)
         for (const auto& itr : members)
             response += itr.second.GetName() + ":" + std::to_string(itr.second.GetAverageLvl()) + "|";
 
+        LOG_ERROR("guild", "Sending ASMSG_GUILD_PLAYERS_ILVL: {}", response);
+
         player->SendAddonMessage(response.c_str());
     }
 }
@@ -1005,7 +1086,22 @@ void AddonIO::HandleGuildEmblemRequest(Player* player, std::string /*body*/)
     if (Guild* guild = player->GetGuild())
     {
         EmblemInfo emblem = guild->GetEmblemInfo();
-        player->SendAddonMessage("ASMSG_PLAYER_GUILD_EMBLEM_INFO\t%d:%d:%d:%d:%d", emblem.GetStyle(), emblem.GetColor(), emblem.GetBorderStyle(), emblem.GetBorderColor(), emblem.GetBackgroundColor());
+
+        int s = emblem.GetStyle();
+        int c = emblem.GetColor();
+        int bs = emblem.GetBorderStyle();
+        int bc = emblem.GetBorderColor();
+        int bg = emblem.GetBackgroundColor();
+
+        LOG_ERROR("guild", "Sending ASMSG_PLAYER_GUILD_EMBLEM_INFO: {}:{}:{}:{}:{}", s, c, bs, bc, bg);
+
+        //Outdated sends %d:%d:%d:%d:%d
+        //player->SendAddonMessage("ASMSG_PLAYER_GUILD_EMBLEM_INFO\t%d:%d:%d:%d:%d", s, c, bs, bc, bg);
+
+        player->SendAddonMessage(fmt::format("ASMSG_PLAYER_GUILD_EMBLEM_INFO\t{}:{}:{}:{}:{}",
+            emblem.GetStyle(), emblem.GetColor(), emblem.GetBorderStyle(),
+            emblem.GetBorderColor(), emblem.GetBackgroundColor()));
+
     }
 }
 
@@ -1029,7 +1125,13 @@ void AddonIO::HandleGuildTeamRequest(Player* player, std::string /*body*/)
         break;
     }
 
-    player->SendAddonMessage("ASMSG_GUILD_TEAM\t%d", factionIcon);
+    LOG_ERROR("guild", "Sent HandleGuildTeamRequest message: {}", factionIcon);
+
+    //Outdated sends %d
+    //player->SendAddonMessage("ASMSG_GUILD_TEAM\t%d", factionIcon);
+
+    player->SendAddonMessage(fmt::format("ASMSG_GUILD_TEAM\t{}", factionIcon));
+
 }
 
 void AddonIO::HandleAverageItemLevelRequest(Player* player, std::string body)
@@ -1049,7 +1151,7 @@ void AddonIO::HandleAverageItemLevelRequest(Player* player, std::string body)
     }
     catch (std::exception /*ex*/)
     {
-        //TC_LOG_ERROR("network", "ACMSG_AVERAGE_ITEM_LEVEL_REQUEST: Received invalid parameters!");
+        LOG_ERROR("guild", "ACMSG_AVERAGE_ITEM_LEVEL_REQUEST: Received invalid parameters!");
         player->SendAddonMessage("ASMSG_AVERAGE_ITEM_LEVEL_RESPONSE\t-1");
         return;
     }
@@ -1057,9 +1159,17 @@ void AddonIO::HandleAverageItemLevelRequest(Player* player, std::string body)
     Player* target = ObjectAccessor::FindPlayer(guid);
     if (!target)
     {
+        LOG_ERROR("guild", "ACMSG_AVERAGE_ITEM_LEVEL_REQUEST: !target triggered!");
         player->SendAddonMessage("ASMSG_AVERAGE_ITEM_LEVEL_RESPONSE\t-1");
         return;
     }
 
-    player->SendAddonMessage("ASMSG_AVERAGE_ITEM_LEVEL_RESPONSE\t%u", static_cast<uint32>(std::floor(target->GetAverageItemLevel())));
+    uint32 ilvl = static_cast<uint32>(std::floor(target->GetAverageItemLevel()));
+
+    LOG_ERROR("guild", "HandleAverageItemLevelRequest - Sending {}", ilvl);
+
+    //outdated
+    //player->SendAddonMessage("ASMSG_AVERAGE_ITEM_LEVEL_RESPONSE\t%u", static_cast<uint32>(std::floor(target->GetAverageItemLevel())));
+    player->SendAddonMessage(fmt::format("ASMSG_AVERAGE_ITEM_LEVEL_RESPONSE\t{}", ilvl));
+
 }

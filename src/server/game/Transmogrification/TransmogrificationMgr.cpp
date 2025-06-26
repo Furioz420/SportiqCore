@@ -134,7 +134,12 @@ void TransmogrificationMgr::HandleTransmogrificationPrepareRequestFrom(Player* p
     if (result == TRANSMOGRIFICATION_ERROR_OK)
         cost = GetPriceForItem(item->GetTemplate());
 
-    player->SendAddonMessage("ASMSG_TRANSMOGRIFICATION_PREPARE_RESPONSE\t%u:%u:%u:%u", pos + 1, transEntry, result, cost);
+    LOG_ERROR("transmog", "Sent TRANSMOGRIFICATION_PREPARE_RESPONSE: {}:{}:{}:{}", pos + 1, transEntry, result, cost);
+
+    player->SendAddonMessage(fmt::format(
+        "ASMSG_TRANSMOGRIFICATION_PREPARE_RESPONSE\t{}:{}:{}:{}",
+        pos + 1, transEntry, result, cost));
+
 }
 
 void TransmogrificationMgr::HandleTransmogrificationRemoveRequestFrom(Player* player, uint8 pos)
@@ -207,7 +212,10 @@ void TransmogrificationMgr::HandleTransmogrificationApplyRequestFrom(Player* pla
             result = 1;
     }
 
-    player->SendAddonMessage("ASMSG_TRANSMOGRIFICATION_APPLY_RESPONSE\t%u", result);
+    LOG_ERROR("transmog", "Sent TRANSMOGRIFICATION_APPLY_RESPONSE: {}", result);
+
+    player->SendAddonMessage(fmt::format("ASMSG_TRANSMOGRIFICATION_APPLY_RESPONSE\t{}", result));
+
 }
 
 std::string TransmogrificationMgr::GenerateTransmogrificationInfoFor(Player* player) const

@@ -1635,7 +1635,8 @@ void WorldSession::WritePurchaseToLogs(WorldSession* sess, std::string service, 
 {
     Player* pl = sess->GetPlayer();
     LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_STORE_LOGS);
-    stmt->SetArguments(0, pl->GetGUID());
+    //stmt->SetArguments(0, pl->GetGUID()); default gives errors
+    stmt->SetData(0, pl->GetGUID().GetRawValue());
     stmt->SetData(1, pl->GetName());
     stmt->SetData(2, sess->GetAccountId());
     stmt->SetData(3, service);

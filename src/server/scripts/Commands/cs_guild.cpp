@@ -37,13 +37,87 @@ public:
             { "uninvite",   HandleGuildUninviteCommand, SEC_GAMEMASTER, Console::Yes },
             { "rank",       HandleGuildRankCommand,     SEC_GAMEMASTER, Console::Yes },
             { "rename",     HandleGuildRenameCommand,   SEC_GAMEMASTER, Console::Yes },
-            { "info",       HandleGuildInfoCommand,     SEC_GAMEMASTER, Console::Yes }
+            { "info",       HandleGuildInfoCommand,     SEC_GAMEMASTER, Console::Yes },
+            { "setlevel",   HandleGuildSetLevelCommand, SEC_GAMEMASTER, Console::Yes },
+            { "givexp",     HandleGuildGiveXpCommand,   SEC_GAMEMASTER, Console::Yes }
         };
         static ChatCommandTable commandTable =
         {
             { "guild", guildCommandTable }
         };
         return commandTable;
+    }
+
+    //Guild-Level-System
+    static bool HandleGuildSetLevelCommand(ChatHandler* handler, char const* _args)
+    {
+        if (!*_args)
+            return false;
+        char* args = (char*)_args;
+        char const* guildNameStr = handler->extractQuotedArg(args);
+        if (!guildNameStr)
+        {
+            handler->SendSysMessage(LANG_BAD_VALUE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        char const* levelStr = handler->extractQuotedArg(strtok(nullptr, ""));
+        if (!levelStr)
+        {
+            handler->SendSysMessage(LANG_BAD_VALUE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        uint8 newLevel = uint8(atoi(levelStr));
+        Guild* guild = sGuildMgr->GetGuildByName(guildNameStr);
+        if (guild)
+        {
+            if (newLevel > GUILD_MAX_LEVEL)
+            {
+                handler->PSendSysMessage("The indicated level is too high.");
+                return false;
+            }
+            else
+                guild->SetLevel(newLevel, true);
+        }
+        else
+        {
+            handler->PSendSysMessage("There was no guild with the name [%s] be found.", guildNameStr);
+            return false;
+        }
+        return true;
+    }
+    static bool HandleGuildGiveXpCommand(ChatHandler* handler, char const* _args)
+    {
+        if (!*_args)
+            return false;
+        char* args = (char*)_args;
+        char const* guildNameStr = handler->extractQuotedArg(args);
+        if (!guildNameStr)
+        {
+            handler->SendSysMessage(LANG_BAD_VALUE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        char const* xpStr = handler->extractQuotedArg(strtok(nullptr, ""));
+        if (!xpStr)
+        {
+            handler->SendSysMessage(LANG_BAD_VALUE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        uint32 value = uint32(atoi(xpStr));
+        Guild* guild = sGuildMgr->GetGuildByName(guildNameStr);
+        if (guild)
+        {
+            guild->GiveXp(value);
+        }
+        else
+        {
+            handler->PSendSysMessage("There was no guild with the name [%s] be found.", guildNameStr);
+            return false;
+        }
+        return true;
     }
 
     static bool HandleGuildCreateCommand(ChatHandler* handler, Optional<PlayerIdentifier> target, QuotedString guildName)
