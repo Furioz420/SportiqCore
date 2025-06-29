@@ -467,9 +467,6 @@ public:
     int32 GetAccountBalance() { return m_balance; };
     int32 GetAccountVote() { return m_vote; };
     void WritePurchaseToLogs(WorldSession* sess, std::string service, uint32 item, uint32 count, uint32 price, uint32 time);
-    PlayerDonate FindShopCurrency(uint32 AccountID);
-    void LoadDonateCurrency(PreparedQueryResult result);
-
     //Premium
     void LoadAccountPremium(AccountPremiumInfo data);
     void SetAccountPremium(uint32 premiumTime);

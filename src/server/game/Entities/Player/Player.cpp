@@ -290,7 +290,7 @@ Player::Player(WorldSession* session): Unit(true), m_mover(this)
     /////////////////// VIP System /////////////////////
     m_premiumTimer = 0;
     m_vip = false;
-    m_unsetdate = 0;
+    +m_unsetdate = 0;
 
     for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
         m_forced_speed_changes[i] = 0;
@@ -4802,7 +4802,7 @@ void Player::DurabilityPointsLossAll(int32 points, bool inventory)
 
 void Player::DurabilityPointsLoss(Item* item, int32 points)
 {
-    if (HasPreventDurabilityLossAura() || IsPremium())
+    if (HasPreventDurabilityLossAura())
         return;
 
     int32 pMaxDurability = item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY);
