@@ -225,24 +225,6 @@ enum CharterTypes
     ARENA_TEAM_CHARTER_5v5_TYPE                   = 5
 };
 
-struct AccountPremiumInfo
-{
-    uint32 setDate = 0;
-    uint32 unsetDate = 0;
-    bool isActive = false;
-};
-struct AccountBalanceInfo
-{
-    uint32 balance = 0;
-    uint32 vote = 0;
-};
-struct PlayerDonate
-{
-    uint32 balance;
-    uint32 vote;
-};
-typedef std::map<uint32, PlayerDonate> PlayerDonateMap;
-
 //class to deal with packet processing
 //allows to determine if next packet is safe to be processed
 class PacketFilter
@@ -459,19 +441,6 @@ public:
     void SendBindPoint(Creature* npc);
 
     void SendAttackStop(Unit const* enemy);
-
-    //Store
-    void LoadAccountStore(PlayerDonate data);
-    bool SetAccountCurrency(int32 Balance, uint8 moneyid, bool isProfession);
-    bool AddDonateBonusOrVote(int32 Balance, uint8 moneyid, bool isProfession);
-    int32 GetAccountBalance() { return m_balance; };
-    int32 GetAccountVote() { return m_vote; };
-    void WritePurchaseToLogs(WorldSession* sess, std::string service, uint32 item, uint32 count, uint32 price, uint32 time);
-    //Premium
-    void LoadAccountPremium(AccountPremiumInfo data);
-    void SetAccountPremium(uint32 premiumTime);
-    void UnsetAccountPremium();
-    uint32 GetAccountPremiumUnsetTime();
 
     void SendBattleGroundList(ObjectGuid guid, BattlegroundTypeId bgTypeId = BATTLEGROUND_RB);
 
@@ -693,8 +662,6 @@ public:                                                 // opcodes handlers
     void HandleCreatureQueryOpcode(WorldPacket& recvPacket);
 
     void HandleGameObjectQueryOpcode(WorldPacket& recvPacket);
-
-    void ShopCreatureOpcode(uint32 entry);
 
     void HandleMoveWorldportAckOpcode(WorldPacket& recvPacket);
     void HandleMoveWorldportAck(); // for server-side calls
@@ -1232,13 +1199,6 @@ private:
     std::map<uint32, uint32> _pendingTimeSyncRequests; // key: counter. value: server time when packet with that counter was sent.
     uint32 _timeSyncNextCounter;
     uint32 _timeSyncTimer;
-
-    uint32 _sesionShopUpdate;
-    uint32 premiumSetDate = 0;
-    uint32 premiumUnsetDate = 0;
-    uint32 m_balance = 0;
-    uint32 m_vote = 0;
-    PlayerDonateMap player_donate;
 
     WorldSession(WorldSession const& right) = delete;
     WorldSession& operator=(WorldSession const& right) = delete;

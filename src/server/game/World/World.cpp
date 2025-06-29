@@ -82,7 +82,6 @@
 #include "TicketMgr.h"
 #include "Transport.h"
 #include "TransportMgr.h"
-#include "TransmogrificationMgr.h"
 #include "UpdateTime.h"
 #include "Util.h"
 #include "VMapFactory.h"
@@ -128,8 +127,6 @@ World::World()
     _mail_expire_check_timer = 0s;
     _isClosed = false;
     _cleaningFlags = 0;
-
-    m_shopUpdate = 0;
 
     memset(_rate_values, 0, sizeof(_rate_values));
     memset(_int_configs, 0, sizeof(_int_configs));
@@ -757,9 +754,6 @@ void World::LoadConfigSettings(bool reload)
 
     _int_configs[CONFIG_SKILL_GAIN_CRAFTING] = sConfigMgr->GetOption<int32>("SkillGain.Crafting", 1);
 
-    _int_configs[CONFIG_SKILL_GAIN_CRAFTING_VIP] = sConfigMgr->GetOption<int32>("SkillGainVIP.Crafting", 1);
-    _int_configs[CONFIG_SKILL_GAIN_GATHERING_VIP] = sConfigMgr->GetOption<int32>("SkillGainVIP.Gathering", 1);
-
     _int_configs[CONFIG_SKILL_GAIN_DEFENSE] = sConfigMgr->GetOption<int32>("SkillGain.Defense", 1);
 
     _int_configs[CONFIG_SKILL_GAIN_GATHERING] = sConfigMgr->GetOption<int32>("SkillGain.Gathering", 1);
@@ -1263,37 +1257,6 @@ void World::LoadConfigSettings(bool reload)
         _int_configs[CONFIG_LFG_KICK_PREVENTION_TIMER] = 15 * MINUTE * IN_MILLISECONDS;
         LOG_ERROR("server.loading", "LFG.KickPreventionTimer can't be higher than 15 minutes.");
     }
-
-    //Shop
-    _int_configs[CONFIG_SHOP_INTERVAL_UPDATE] = sConfigMgr->GetOption<int32>("ShopUpdateInterval", 1 * MINUTE * IN_MILLISECONDS);
-    _bool_configs[CONFIG_SHOP_ENABLE] = sConfigMgr->GetOption<bool>("Shop.Enabled", false);
-    // VIP system
-    _bool_configs[CONFIG_VIP_DEBUFF] = sConfigMgr->GetOption<bool>("Config.Vip.Debuff.Command", false);
-    _bool_configs[CONFIG_VIP_BANK] = sConfigMgr->GetOption<bool>("Config.Vip.Bank.Command", false);
-    _bool_configs[CONFIG_VIP_MAIL] = sConfigMgr->GetOption<bool>("Config.Vip.Mail.Command", false);
-    _bool_configs[CONFIG_VIP_REPAIR] = sConfigMgr->GetOption<bool>("Config.Vip.Repair.Command", false);
-    _bool_configs[CONFIG_VIP_RESET_TALENTS] = sConfigMgr->GetOption<bool>("Config.Vip.Reset.Talents.Command", false);
-    _bool_configs[CONFIG_VIP_TAXI] = sConfigMgr->GetOption<bool>("Config.Vip.Taxi.Command", false);
-    _bool_configs[CONFIG_VIP_HOME] = sConfigMgr->GetOption<bool>("Config.Vip.Home.Command", false);
-    _bool_configs[CONFIG_VIP_CHANGE_RACE] = sConfigMgr->GetOption<bool>("Config.Vip.Change.Race.Command", false);
-    _bool_configs[CONFIG_VIP_CUSTOMIZE] = sConfigMgr->GetOption<bool>("Config.Vip.Customize.Command", false);
-    _bool_configs[CONFIG_VIP_CAPITAL] = sConfigMgr->GetOption<bool>("Config.Vip.Capital.Command", false);
-    _bool_configs[CONFIG_VIP_APPEAR] = sConfigMgr->GetOption<bool>("Config.Vip.Appear.Command", false);
-    _bool_configs[CONFIG_VIP_ALL_DISABLED] = !sWorld->getBoolConfig(CONFIG_VIP_DEBUFF) &&
-        !sWorld->getBoolConfig(CONFIG_VIP_BANK) &&
-        !sWorld->getBoolConfig(CONFIG_VIP_MAIL) &&
-        !sWorld->getBoolConfig(CONFIG_VIP_REPAIR) &&
-        !sWorld->getBoolConfig(CONFIG_VIP_RESET_TALENTS) &&
-        !sWorld->getBoolConfig(CONFIG_VIP_TAXI) &&
-        !sWorld->getBoolConfig(CONFIG_VIP_HOME) &&
-        !sWorld->getBoolConfig(CONFIG_VIP_CAPITAL) &&
-        !sWorld->getBoolConfig(CONFIG_VIP_CHANGE_RACE) &&
-        !sWorld->getBoolConfig(CONFIG_VIP_CUSTOMIZE) &&
-        !sWorld->getBoolConfig(CONFIG_VIP_APPEAR);
-    _rate_values[RATE_VIP_XP_KILL] = sConfigMgr->GetOption<float>("Rate.XP.Kill.Premium", 1.0f);
-    _rate_values[RATE_VIP_XP_QUEST] = sConfigMgr->GetOption<float>("Rate.XP.Quest.Premium", 1.0f);
-    _rate_values[RATE_VIP_HONOR] = sConfigMgr->GetOption<float>("Rate.Honor.Premium", 1.0f);
-    _rate_values[RATE_VIP_REPUTATION] = sConfigMgr->GetOption<float>("Rate.Reputation.Gain.Premium", 1.0f);
 
     // Realm Availability
     _bool_configs[CONFIG_REALM_LOGIN_ENABLED] = sConfigMgr->GetOption<bool>("World.RealmAvailability", true);
@@ -1886,10 +1849,6 @@ void World::SetInitialWorldSettings()
     LOG_INFO("server.loading", "Initialize Commands...");
     Acore::ChatCommands::LoadCommandMap();
 
-    // Transmogrification
-    LOG_INFO("server.loading", "Loading transmogrification data...");
-    sTransmogrificationMgr->LoadFromDB();
-
     ///- Initialize game time and timers
     LOG_INFO("server.loading", "Initialize Game Time and Timers");
     LOG_INFO("server.loading", " ");
@@ -2010,9 +1969,6 @@ void World::SetInitialWorldSettings()
 
     LOG_INFO("server.loading", "Load Channels...");
     ChannelMgr::LoadChannels();
-
-    LOG_INFO("server.loading", "LoadShop...");
-    LoadShop();
 
     LOG_INFO("server.loading", "Loading AntiDos opcode policies");
     sWorldGlobals->LoadAntiDosOpcodePolicies();
@@ -2817,96 +2773,4 @@ CliCommandHolder::CliCommandHolder(void* callbackArg, char const* command, Print
 CliCommandHolder::~CliCommandHolder()
 {
     free(m_command);
-}
-
-void IWorld::LoadShop()
-{
-    uint32 store_version = 0;
-    if (auto ver = LoginDatabase.Query("SELECT * from custom_store_shop_version"))
-    {
-        auto ve_field = ver->Fetch();
-        m_version = ve_field[0].Get<uint64>();
-        if (auto result = LoginDatabase.Query("SELECT * from custom_store_item_data"))
-        {
-            std::multimap<int32, StoreItemData> itemMap;
-            StoreItemData data;
-            uint32 store_storeId = 0;
-            do
-            {
-                auto fields = result->Fetch();
-                store_storeId = fields[0].Get<uint64>();
-                data.itemEntry = fields[1].Get<uint64>();
-                data.count = fields[2].Get<uint64>();
-                data.price = fields[3].Get<uint64>();
-                data.discount = fields[4].Get<uint64>();
-                data.discountPrice = fields[5].Get<uint64>();
-                data.creatureEntry = fields[6].Get<uint64>();
-                data.storeFlags = fields[7].Get<uint64>();
-                data.CategoryID = fields[8].Get<uint64>();
-                data.SubCategoryID = fields[9].Get<uint64>();
-                data.MoneyID = fields[10].Get<uint64>();
-                itemMap.insert(std::pair<int32, StoreItemData>(store_storeId, data));
-            } while (result->NextRow());
-            auto store_res = LoginDatabase.Query("SELECT count(*) from custom_store_item_data");
-            auto store_fields = store_res->Fetch();
-            shop_count = store_fields[0].Get<uint64>();
-            itemdata_map = itemMap;
-        }
-        if (auto result = LoginDatabase.Query("SELECT * from custom_store_special_offer"))
-        {
-            std::multimap<int32, StoreSpecialOfferData> offerMap;
-            StoreSpecialOfferData data;
-            uint32 store_offerID = 0;
-            do
-            {
-                auto fields = result->Fetch();
-                store_offerID = fields[0].Get<uint64>();
-                data.background = fields[1].Get<std::string>();
-                data.headline = fields[2].Get<std::string>();
-                data.title = fields[3].Get<std::string>();
-                data.description = fields[4].Get<std::string>();
-                data.detailsTitle = fields[5].Get<std::string>();
-                data.details = fields[6].Get<uint64>();
-                data.time = fields[7].Get<uint64>();
-                data.productID = fields[8].Get<uint64>();
-                data.itemEntry = fields[9].Get<uint64>();
-                data.price = fields[10].Get<uint64>();
-                offerMap.insert(std::pair<int32, StoreSpecialOfferData>(store_offerID, data));
-            } while (result->NextRow());
-            specialoffer_map = offerMap;
-        }
-        if (auto result = LoginDatabase.Query("SELECT * from custom_store_special_offer_details"))
-        {
-            std::multimap<int32, StoreSpecialOfferDetailsData> detailMap;
-            StoreSpecialOfferDetailsData data;
-            uint32 detailsID = 0;
-            do
-            {
-                auto fields = result->Fetch();
-                detailsID = fields[0].Get<uint64>();
-                data.itemID = fields[1].Get<uint64>();
-                data.role = fields[2].Get<uint64>();
-                data.count = fields[3].Get<uint64>();
-                detailMap.insert(std::pair<int32, StoreSpecialOfferDetailsData>(detailsID, data));
-            } while (result->NextRow());
-            specialofferdetails_map = detailMap;
-        }
-        if (auto result = LoginDatabase.Query("SELECT * from custom_store_mounts"))
-        {
-            std::multimap<int32, CollectionMountData> mountMap;
-            CollectionMountData data;
-            uint32 mount_Id = 0;
-            do
-            {
-                auto fields = result->Fetch();
-                mount_Id = fields[0].Get<uint64>();
-                data.hash = fields[1].Get<std::string>();
-                data.currency = fields[2].Get<uint64>();
-                data.price = fields[3].Get<uint64>();
-                data.productID = fields[4].Get<uint64>();
-                mountMap.insert(std::pair<int32, CollectionMountData>(mount_Id, data));
-            } while (result->NextRow());
-            collection_map = mountMap;
-        }
-    }
 }
