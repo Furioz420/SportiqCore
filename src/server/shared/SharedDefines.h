@@ -81,7 +81,7 @@ enum Races
     RACE_DRAENEI = 11, //, TITLE Draenei
     RACE_WORGEN = 12,
     RACE_NIGHTBORNELF = 13,
-    RACE_HIGHELF = 14,
+    RACE_TUSKARR = 14,
     RACE_VOIDELF = 15,
     RACE_EREDAR = 16,
     RACE_DRACTHYR_H = 17,
@@ -91,37 +91,36 @@ enum Races
     RACE_GOBLIN = 21,
     RACE_PANDAREN_H = 22,
     RACE_BROKEN = 23,
-    RACE_TUSKARR = 24,
+    RACE_ILLIDARI_NIGHTELF = 24,
     RACE_HIGHMOUNTAIN = 25,
     RACE_PANDAREN_A = 26,
     RACE_ILLIDARI_BLOODELF = 27,
-    RACE_TROLL_2 = 28,
+    RACE_MURLOC = 28,
     RACE_DARKIRONDWARF = 29,
     RACE_DRACTHYR_A = 30,
-    RACE_KULTIRAN = 31,
-    RACE_ILLIDARI_NIGHTELF = 32
+    RACE_KULTIRAN = 31
 };
 
 // max+1 for player race
-#define MAX_RACES         32
+#define MAX_RACES         31
 
 #define RACEMASK_ALL_PLAYABLE \
    ((1<<(RACE_HUMAN-1))            | (1<<(RACE_ORC-1))                | (1<<(RACE_DWARF-1))              | \
    (1<<(RACE_NIGHTELF-1))          | (1<<(RACE_UNDEAD_PLAYER-1))      | (1<<(RACE_TAUREN-1))             | \
    (1<<(RACE_GNOME-1))             | (1<<(RACE_TROLL-1))              | (1<<(RACE_VULPERA-1))            | \
    (1<<(RACE_BLOODELF-1))          | (1<<(RACE_DRAENEI-1))            | (1<<(RACE_WORGEN-1))             | \
-   (1<<(RACE_NIGHTBORNELF-1))      | (1<<(RACE_HIGHELF-1))            | (1<<(RACE_VOIDELF-1))            | \
+   (1<<(RACE_NIGHTBORNELF-1))      | (1<<(RACE_TUSKARR-1))            | (1<<(RACE_VOIDELF-1))            | \
    (1<<(RACE_EREDAR-1))            | (1<<(RACE_DRACTHYR_H-1))         | (1<<(RACE_TROLL_ZANDALARI-1))    | \
    (1<<(RACE_OGRE-1))              | (1<<(RACE_LIGHTFORGED-1))        | (1<<(RACE_GOBLIN-1))             | \
-   (1<<(RACE_PANDAREN_H-1))        | (1<<(RACE_BROKEN-1))             | (1<<(RACE_TUSKARR-1))            | \
+   (1<<(RACE_PANDAREN_H-1))        | (1<<(RACE_BROKEN-1))             | (1<<(RACE_ILLIDARI_NIGHTELF-1))  | \
    (1<<(RACE_HIGHMOUNTAIN-1))      | (1<<(RACE_PANDAREN_A-1))         | (1<<(RACE_ILLIDARI_BLOODELF-1))  | \
-   (1<<(RACE_TROLL_2-1))           | (1<<(RACE_DARKIRONDWARF-1))      | (1<<(RACE_DRACTHYR_A-1))         | \
-   (1<<(RACE_KULTIRAN-1))          | (1<<(RACE_ILLIDARI_NIGHTELF-1)))
+   (1<<(RACE_MURLOC-1))            | (1<<(RACE_DARKIRONDWARF-1))      | (1<<(RACE_DRACTHYR_A-1))         | \
+   (1<<(RACE_KULTIRAN-1))          |
 
 #define RACEMASK_ALLIANCE \
      ((1<<(RACE_HUMAN-1))              | (1<<(RACE_DWARF-1))              | (1<<(RACE_NIGHTELF-1)) | \
      (1<<(RACE_GNOME-1))               | (1<<(RACE_DRAENEI-1))            | (1<<(RACE_KULTIRAN-1)) | \
-     (1<<(RACE_DARKIRONDWARF-1))       | (1<<(RACE_ILLIDARI_NIGHTELF-1))  | (1<<(RACE_HIGHELF-1))  | \
+     (1<<(RACE_DARKIRONDWARF-1))       | (1<<(RACE_ILLIDARI_NIGHTELF-1))  | (1<<(RACE_TUSKARR-1))  | \
      (1<<(RACE_VOIDELF-1))             | (1<<(RACE_LIGHTFORGED-1))        | (1<<(RACE_WORGEN-1))   | \
      (1<<(RACE_DRACTHYR_A-1))          | (1<<(RACE_PANDAREN_A-1)))
 
@@ -145,7 +144,7 @@ enum class DisplayRace : uint8
     Draenei = 11, //, TITLE Draenei
     Worgen = 12,
     Nightborne = 13,
-    HighElf = 14,
+    Tuskarr = 14,
     VoidElf = 15,
     Eredar = 16,
     Dracthyr_h = 17,
@@ -155,7 +154,7 @@ enum class DisplayRace : uint8
     Goblin = 21,
     Pandareh = 22,
     Broken = 23,
-    Tuskarr = 24,
+    Illidari_NightElf = 24,
     Highmountain = 25,
     Pandaren_a = 26,
     Illidari_BloodElf = 27,
@@ -163,7 +162,6 @@ enum class DisplayRace : uint8
     DarkIronDwarf = 29,
     Dracthyr_a = 30,
     Kultiran = 31,
-    Illidari_NightElf = 32,
     Human2 = 33,
     Orc2 = 34,
     Dwarf2 = 35,

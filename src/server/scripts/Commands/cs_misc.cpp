@@ -2254,8 +2254,8 @@ public:
         case RACE_NIGHTBORNELF:
             raceStr = "Nightborne";
             break;
-        case RACE_HIGHELF:
-            raceStr = "High Elf";
+        case RACE_TUSKARR:
+            raceStr = "Tuskarr";
             break;
         case RACE_VOIDELF:
             raceStr = "Void Elf";
@@ -2284,8 +2284,8 @@ public:
         case RACE_BROKEN:
             raceStr = "Broken";
             break;
-        case RACE_TUSKARR:
-            raceStr = "Tuskarr";
+        case RACE_ILLIDARI_NIGHTELF:
+            raceStr = "Illidari Night Elf";
             break;
         case RACE_HIGHMOUNTAIN:
             raceStr = "Highmountain";
@@ -2296,8 +2296,8 @@ public:
         case RACE_ILLIDARI_BLOODELF:
             raceStr = "Illidari Blood Elf";
             break;
-        case RACE_TROLL_2:
-            raceStr = "Troll 2";
+        case RACE_MURLOC:
+            raceStr = "Murloc";
             break;
         case RACE_DARKIRONDWARF:
             raceStr = "Dark Iron Dwarf";
@@ -2307,9 +2307,6 @@ public:
             break;
         case RACE_KULTIRAN:
             raceStr = "Kul Tiran";
-            break;
-        case RACE_ILLIDARI_NIGHTELF:
-            raceStr = "Illidari Night Elf";
             break;
         }
 
