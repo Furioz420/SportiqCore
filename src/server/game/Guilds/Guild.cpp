@@ -35,10 +35,8 @@
 #include "SocialMgr.h"
 #include "World.h"
 #include "WorldSession.h"
-#include "WorldSessionMgr.h"
 #include <boost/iterator/counting_iterator.hpp>
 
-#include "ScriptMgr.h"
 #define MAX_GUILD_BANK_TAB_TEXT_LEN 500
 #define EMBLEM_PRICE 10 * GOLD
 
@@ -594,7 +592,6 @@ void Guild::Member::SaveToDB(CharacterDatabaseTransaction trans) const
     stmt->SetData (2, m_rankId);
     stmt->SetData(3, m_publicNote);
     stmt->SetData(4, m_officerNote);
-    stmt->SetData(5, m_averageLvl);
     CharacterDatabase.ExecuteOrAppend(trans, stmt);
 }
 
@@ -1038,11 +1035,7 @@ Guild::Guild():
     m_id(0),
     m_createdDate(0),
     m_accountsNumber(0),
-    m_bankMoney(0),
-    m_level(0),
-    m_xp(0),
-    m_xp_for_next_level(0),
-    m_today_xp(0)
+    m_bankMoney(0)
 {
 }
 
@@ -1104,9 +1097,6 @@ bool Guild::Create(Player* pLeader, std::string_view name)
     {
         _CreateNewBankTab();
     }
-
-    //Guild-Level-System
-    m_xp_for_next_level = sWorld->GetXpForNextLevel(m_level);
 
     if (ret)
         sScriptMgr->OnGuildCreate(this, pLeader, m_name);
@@ -1208,73 +1198,6 @@ bool Guild::SetName(std::string_view const& name)
     stmt->SetData(1, GetId());
     CharacterDatabase.Execute(stmt);
     return true;
-}
-
-void Guild::GiveXp(uint32 value)
-{
-    if (!sWorld->getBoolConfig(CONFIG_GUILD_LEVEL_ENABLE))
-        return;
-    uint32 dailyCap = sWorld->getIntConfig(CONFIG_GUILD_DAILY_XP_CAP);
-    uint32 totalXP = sWorld->GetXpForNextLevel(GUILD_MAX_LEVEL - 1);
-    if (m_xp < totalXP)
-        if (m_today_xp < dailyCap)
-        {
-            uint32 xp_value = value;
-            if ((m_today_xp + value) > dailyCap)
-            {
-                xp_value = dailyCap - m_today_xp;
-                m_today_xp = dailyCap;
-            }
-            else
-                m_today_xp += value;
-            if ((m_xp + xp_value) > totalXP)
-                xp_value = totalXP - m_xp;
-            m_xp += xp_value;
-            if (m_xp >= m_xp_for_next_level)
-                SetLevel(m_level + 1, false);
-            CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_XP);
-            stmt->SetData(0, m_xp);
-            stmt->SetData(1, m_id);
-            CharacterDatabase.Execute(stmt);
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_TODAYXP);
-            stmt->SetData(0, m_today_xp);
-            stmt->SetData(1, m_id);
-            CharacterDatabase.Execute(stmt);
-        }
-}
-void Guild::SetLevel(uint8 level, bool byCommand)
-{
-    if (level > GUILD_MAX_LEVEL || !sWorld->getBoolConfig(CONFIG_GUILD_LEVEL_ENABLE))
-        return;
-    m_level = level;
-    if (byCommand)
-    {
-        m_xp = 0;
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_XP);
-        stmt->SetData(0, m_xp);
-        stmt->SetData(1, m_id);
-        CharacterDatabase.Execute(stmt);
-    }
-
-    // sWorld->SendWorldText(LANG_GUILD_LEVEL_UP, m_name.c_str(), level);
-
-    std::string msg = Acore::StringFormat(ChatHandler(nullptr).GetAcoreString(LANG_GUILD_LEVEL_UP), m_name, level);
-
-    sWorldSessionMgr->SendServerMessage(SERVER_MSG_STRING, msg.c_str());
-
-
-    //Save to DB
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_LEVEL);
-    stmt->SetData(0, level);
-    stmt->SetData(1, m_id);
-    CharacterDatabase.Execute(stmt);
-    for (auto itr = m_members.begin(); itr != m_members.end(); ++itr)
-    {
-        if (Player* player = itr->second.FindPlayer())
-            if (player->IsInWorld())
-                player->CastSpell(player, 47292, true);
-    }
-    m_xp_for_next_level = sWorld->GetXpForNextLevel(level);
 }
 
 void Guild::HandleRoster(WorldSession* session)
@@ -1566,15 +1489,6 @@ void Guild::HandleInviteMember(WorldSession* session, std::string const& name)
     invite.GuildName = GetName();
 
     pInvitee->SendDirectMessage(invite.Write());
-
-    //Custom guild UI
-    if (Guild* guild = player->GetGuild())
-    {
-        EmblemInfo emblem = guild->GetEmblemInfo();
-        pInvitee->SendAddonMessage(fmt::format("ASMSG_GUILD_INVITE_REQUEST\t{}:{}:{}:{}:{}:{}",
-            guild->GetLevel(), emblem.GetStyle(), emblem.GetColor(),
-            emblem.GetBorderStyle(), emblem.GetBorderColor(), emblem.GetBackgroundColor()));
-    }
     LOG_DEBUG("guild", "SMSG_GUILD_INVITE [{}]", pInvitee->GetName());
 }
 
@@ -1978,14 +1892,6 @@ void Guild::SendLoginInfo(WorldSession* session)
     HandleRoster(session);
     _BroadcastEvent(GE_SIGNED_ON, player->GetGUID(), player->GetName());
 
-    if (sWorld->getBoolConfig(CONFIG_GUILD_LEVEL_ENABLE))
-    {
-        for (auto& pair : sGuildPerkSpellsStore)
-        {
-            if (pair.first <= m_level)
-                player->learnSpell(pair.second);
-        }
-    }
     if (Member* member = GetMember(player->GetGUID()))
     {
         member->SetStats(player);
@@ -2013,13 +1919,6 @@ bool Guild::LoadFromDB(Field* fields)
     m_bankTabs.reserve(purchasedTabs);
     for (uint8 i = 0; i < purchasedTabs; ++i)
         m_bankTabs.emplace_back(m_id, i);
-
-    //Guild-Level-System
-    m_xp = fields[13].Get<uint32>();
-    m_level = fields[14].Get<uint32>();
-    m_xp_for_next_level = sWorld->GetXpForNextLevel(m_level);
-    m_today_xp = fields[15].Get<uint32>();
-
     return true;
 }
 
@@ -2037,7 +1936,7 @@ bool Guild::LoadMemberFromDB(Field* fields)
     ObjectGuid::LowType lowguid = fields[1].Get<uint32>();
     ObjectGuid playerGuid(HighGuid::Player, lowguid);
 
-    auto [memberIt, isNew] = m_members.try_emplace(lowguid, m_id, playerGuid, fields[2].Get<uint8>(), fields[19].Get<int32>());
+    auto [memberIt, isNew] = m_members.try_emplace(lowguid, m_id, playerGuid, fields[2].Get<uint8>());
     if (!isNew)
     {
         LOG_ERROR("guild", "Tried to add {} to guild '{}'. Member already exists.", playerGuid.ToString(), m_name);
@@ -2294,15 +2193,11 @@ bool Guild::AddMember(ObjectGuid guid, uint8 rankId)
 
     ObjectGuid::LowType lowguid = guid.GetCounter();
 
-    uint32 Ilvl = 0;
-    if (player)
-        Ilvl = player->GetAverageItemLevel();
-
     // If rank was not passed, assign lowest possible rank
     if (rankId == GUILD_RANK_NONE)
         rankId = _GetLowestRankId();
 
-    auto [memberIt, isNew] = m_members.try_emplace(lowguid, m_id, guid, rankId, Ilvl);
+    auto [memberIt, isNew] = m_members.try_emplace(lowguid, m_id, guid, rankId);
     if (!isNew)
     {
         LOG_ERROR("guild", "Tried to add {} to guild '{}'. Member already exists.", guid.ToString(), m_name);
@@ -2414,14 +2309,6 @@ void Guild::DeleteMember(ObjectGuid guid, bool isDisbanding, bool isKicked, bool
     {
         player->SetInGuild(0);
         player->SetRank(0);
-        if (sWorld->getBoolConfig(CONFIG_GUILD_LEVEL_ENABLE))
-        {
-            for (auto& pair : sGuildPerkSpellsStore)
-            {
-                if (pair.first <= m_level)
-                    player->removeSpell(pair.second, false, false);
-            }
-        }
     }
     else
     {

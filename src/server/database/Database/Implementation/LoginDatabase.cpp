@@ -163,7 +163,7 @@ void LoginDatabaseConnection::DoPrepareStatements()
     PrepareStatement(LOGIN_SEL_SHOP_5, "SELECT * from custom_store_special_offer", CONNECTION_ASYNC);
     PrepareStatement(LOGIN_SEL_SHOP_6, "SELECT * from custom_store_special_offer_details", CONNECTION_ASYNC);
     PrepareStatement(LOGIN_SEL_SHOP_7, "SELECT * from custom_store_mounts", CONNECTION_ASYNC);
-    PrepareStatement(LOGIN_INSERT_STORE_BALANCE, "INSERT INTO account_donate VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(LOGIN_INSERT_STORE_BALANCE, "INSERT INTO account_donate VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     // VIP system
     PrepareStatement(LOGIN_SET_ACCOUNT_PREMIUM, "INSERT INTO account_premium (id, setdate, unsetdate, active) VALUES (?, unix_timestamp(NOW()), ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(LOGIN_DEL_ACCOUNT_PREMIUM, "DELETE FROM account_premium WHERE id = ?", CONNECTION_ASYNC);

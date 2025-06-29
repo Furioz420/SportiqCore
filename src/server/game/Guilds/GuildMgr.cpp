@@ -17,11 +17,6 @@
 
 #include "GuildMgr.h"
 #include "Common.h"
-#include "Chat.h"
-#include "Language.h"
-
-#include "WorldState.h"
-#include "WorldStateDefines.h"
 
 GuildMgr::GuildMgr() : NextGuildId(1)
 { }
@@ -106,7 +101,7 @@ void GuildMgr::LoadGuilds()
         //          0          1       2             3              4              5              6
         QueryResult result = CharacterDatabase.Query("SELECT g.guildid, g.name, g.leaderguid, g.EmblemStyle, g.EmblemColor, g.BorderStyle, g.BorderColor, "
                              //   7                  8       9       10            11           12
-            "g.BackgroundColor, g.info, g.motd, g.createdate, g.BankMoney, COUNT(gbt.guildid), g.xp, g.level, g.todayXP "
+                             "g.BackgroundColor, g.info, g.motd, g.createdate, g.BankMoney, COUNT(gbt.guildid) "
                              "FROM guild g LEFT JOIN guild_bank_tab gbt ON g.guildid = gbt.guildid GROUP BY g.guildid ORDER BY g.guildid ASC");
 
         if (!result)
@@ -185,7 +180,7 @@ void GuildMgr::LoadGuilds()
         //           0        1         2     3      4        5       6       7       8       9       10
         QueryResult result = CharacterDatabase.Query("SELECT guildid, gm.guid, `rank`, pnote, offnote, w.tab0, w.tab1, w.tab2, w.tab3, w.tab4, w.tab5, "
                           // 11        12      13       14       15        16      17         18
-            "w.money, c.name, c.level, c.class, c.gender, c.zone, c.account, c.logout_time, gm.ItemLvl "
+                             "w.money, c.name, c.level, c.class, c.gender, c.zone, c.account, c.logout_time "
                              "FROM guild_member gm "
                              "LEFT JOIN guild_member_withdraw w ON gm.guid = w.guid "
                              "LEFT JOIN characters c ON c.guid = gm.guid ORDER BY guildid ASC");
@@ -416,26 +411,4 @@ void GuildMgr::ResetTimes()
             guild->ResetTimes();
 
     CharacterDatabase.DirectExecute("TRUNCATE guild_member_withdraw");
-}
-
-void GuildMgr::InitAutomaticGuildXPDistribution()
-{
-    if (!sWorld->getBoolConfig(CONFIG_GUILD_LEVEL_ENABLE))
-        return;
-    time_t wstime = time_t(sWorldState->getWorldState(WS_GUILD_XP_CAP_RESET_TIME));
-    time_t curtime = time(NULL);
-    if (wstime < curtime)
-        sGuildMgr->SetGuildNextPeriodicUpdateTime(curtime);
-    else
-        sGuildMgr->SetGuildNextPeriodicUpdateTime(wstime);
-}
-
-void GuildMgr::DistributeGuildXP()
-{
-    for (GuildContainer::const_iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
-        if (Guild* guild = itr->second)
-            guild->SetGuildTodayXP(0);
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_TODAY);
-    CharacterDatabase.Execute(stmt);
-    ChatHandler(nullptr).SendWorldText(LANG_GUILDINFO_RESET);
 }

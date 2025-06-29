@@ -298,8 +298,6 @@ enum FactionTemplates
 
 #define MAX_SPILLOVER_FACTIONS 6
 
-#define GUILD_MAX_LEVEL 25
-
 enum MoneyConstants
 {
     COPPER = 1,

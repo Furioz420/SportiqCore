@@ -20,7 +20,6 @@
 
 #include "AsyncCallbackProcessor.h"
 #include "Common.h"
-#include "Map.h"
 #include "Duration.h"
 #include "ObjectGuid.h"
 #include "SharedDefines.h"
@@ -234,12 +233,6 @@ enum WorldBoolConfigs
     CONFIG_VIP_CAPITAL,
     CONFIG_VIP_APPEAR,
     CONFIG_VIP_ALL_DISABLED,
-    CONFIG_GUILD_LEVEL_ENABLE,
-    CONFIG_GUILD_SYSTEM_REWARD_BG,
-    CONFIG_GUILD_SYSTEM_REWARD_ARENA,
-    CONFIG_GUILD_SYSTEM_REWARD_LVLUP,
-    CONFIG_GUILD_SYSTEM_REWARD_ONPLAYERKILL,
-    CONFIG_GUILD_SYSTEM_REWARD_ONCREATUREKILL,
     CONFIG_SPELL_QUEUE_ENABLED,
     BOOL_CONFIG_VALUE_COUNT
 };
@@ -486,13 +479,6 @@ enum WorldIntConfigs
     CONFIG_WATER_BREATH_TIMER,
     CONFIG_DAILY_RBG_MIN_LEVEL_AP_REWARD,
     CONFIG_SHOP_INTERVAL_UPDATE,
-    CONFIG_GUILD_DAILY_XP_CAP,
-    CONFIG_GUILD_SYSTEM_ONPLAYERKILL_REWARD,
-    CONFIG_GUILD_SYSTEM_LVLUP_REWARD,
-    CONFIG_GUILD_SYSTEM_BG_REWARD_WINNERCOUNT,
-    CONFIG_GUILD_SYSTEM_BG_REWARD_LOSERCOUNT,
-    CONFIG_GUILD_SYSTEM_ARENA_REWARD_WINNERCOUNT,
-    CONFIG_GUILD_SYSTEM_ARENA_REWARD_LOSERCOUNT,
     CONFIG_AUCTIONHOUSE_WORKERTHREADS,
     CONFIG_SPELL_QUEUE_WINDOW,
     CONFIG_SUNSREACH_COUNTER_MAX,
@@ -657,8 +643,6 @@ public:
     [[nodiscard]] virtual std::string const& GetRealmName() const = 0;
     virtual void SetRealmName(std::string name) = 0;
     virtual void RemoveOldCorpses() = 0;
-
-    virtual uint32 GetXpForNextLevel(uint8 level) = 0;
 
     void LoadShop();
     uint32 GetStoreItems() { return shop_count; };

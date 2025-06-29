@@ -56,12 +56,11 @@ namespace AccountMgr
     bool IsConsoleAccount(uint32 gmlevel);
 
     static uint32 GetGuidOfOnlineCharacter(uint32 accountId);
-
-    time_t GetVIPunsetDate(uint32 accountId);
-    bool GetVipStatus(uint32 accountId);
-    void SetVipStatus(uint32 accountId, time_t unsetdate);
-    void RemoveVipStatus(uint32 accountId);
-    void UpdateVipStatus(uint32 accountId, time_t unsetdate);
+    static time_t GetVIPunsetDate(uint32 accountId);
+    static bool GetVipStatus(uint32 accountId);
+    static void SetVipStatus(uint32 accountId, time_t unsetdate);
+    static void RemoveVipStatus(uint32 accountId);
+    static void UpdateVipStatus(uint32 accountId, time_t unsetdate);
 };
 
 #endif

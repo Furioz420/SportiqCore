@@ -160,7 +160,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // 0: string, 1: uint32
     PrepareStatement(CHAR_UPD_GUILD_NAME, "UPDATE guild SET name = ? WHERE guildid = ?", CONNECTION_ASYNC);
     // 0: uint32, 1: uint32, 2: uint8, 4: string, 5: string
-    PrepareStatement(CHAR_INS_GUILD_MEMBER, "INSERT INTO guild_member (guildid, guid, `rank`, pnote, offnote, ItemLvl) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_INS_GUILD_MEMBER, "INSERT INTO guild_member (guildid, guid, `rank`, pnote, offnote) VALUES (?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_GUILD_MEMBER, "DELETE FROM guild_member WHERE guid = ?", CONNECTION_ASYNC); // 0: uint32
     PrepareStatement(CHAR_DEL_GUILD_MEMBERS, "DELETE FROM guild_member WHERE guildid = ?", CONNECTION_ASYNC); // 0: uint32
     PrepareStatement(CHAR_SEL_GUILD_MEMBER_EXTENDED, "SELECT g.guildid, g.name, gr.rname, gm.pnote, gm.offnote "
@@ -623,13 +623,6 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // Transmogrification
     PrepareStatement(CHAR_DEL_TRANSMOGRIFICATION_INFO, "DELETE FROM item_transmogrification WHERE item = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_TRANSMOGRIFICATION_INFO, "INSERT INTO item_transmogrification (item, transEntry) VALUES (?, ?)", CONNECTION_ASYNC);
-
-    //Guild-Level-System
-    PrepareStatement(CHAR_UPD_GUILD_LEVEL, "UPDATE guild SET level = ? WHERE guildid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_UPD_GUILD_XP, "UPDATE guild SET xp = ? WHERE guildid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_UPD_GUILD_TODAYXP, "UPDATE guild SET todayXP = ? WHERE guildid = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_UPD_GUILD_TODAY, "UPDATE guild SET todayXP = 0", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_UPD_MEMBER_ILVL, "UPDATE guild_member SET ItemLvl = ? WHERE guid = ?", CONNECTION_ASYNC);
 }
 
 CharacterDatabaseConnection::CharacterDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo)

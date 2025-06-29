@@ -40,9 +40,6 @@ class SystemMgr;
 
 struct Realm;
 
-extern std::vector<std::pair<uint8, uint32>> sGuildPerkSpellsStore;
-extern std::vector<std::pair<uint32, uint32>> sGuildXPOnKill;
-
 AC_GAME_API extern Realm realm;
 
 enum ShutdownMask : uint8
@@ -247,12 +244,6 @@ public:
     /// Are we on a "Player versus Player" server?
     [[nodiscard]] bool IsPvPRealm() const override;
     [[nodiscard]] bool IsFFAPvPRealm() const override;
-
-    //Guild-Level-System
-    void LoadGuildXPOnKill();
-    void LoadGuildBonusInfo();
-    uint32 GetXpForNextLevel(uint8 level) override;
-    std::vector<uint32> guildXpForLevel;
 
     // for max speed access
     static float GetMaxVisibleDistanceOnContinents()    { return _maxVisibleDistanceOnContinents; }

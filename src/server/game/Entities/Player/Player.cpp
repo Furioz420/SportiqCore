@@ -2548,18 +2548,6 @@ void Player::GiveLevel(uint8 level)
 
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL);
 
-    // Guild Leveling
-    if (Guild* guild = GetGuild())
-    {
-        if (sWorld->getBoolConfig(CONFIG_GUILD_SYSTEM_REWARD_LVLUP))
-        {
-            if (level > oldLevel)
-            {
-                uint32 xp = sWorld->getIntConfig(CONFIG_GUILD_SYSTEM_LVLUP_REWARD) * (level - oldLevel);
-                guild->GiveXp(xp);
-            }
-        }
-    }
     // Refer-A-Friend
     if (GetSession()->GetRecruiterId())
         if (level < sWorld->getIntConfig(CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL))
@@ -13751,93 +13739,6 @@ uint32 Player::GetPhaseMaskForSpawn() const
         return n_phase;
 
     return phase;
-}
-
-bool Player::IsAllowableToEquipFor(ItemTemplate const* proto) const
-{
-    if (!proto)
-        return false;
-
-    // General usability check
-    if (CanUseItem(proto) != EQUIP_ERR_OK)
-        return false;
-
-    // Weapon skill check
-    if (proto->Class == ITEM_CLASS_WEAPON)
-    {
-        uint32 skill = proto->GetSkill();
-        if (skill && GetSkillValue(skill) == 0)
-            return false;
-    }
-    // Armor skill and faction check
-    else if (proto->Class == ITEM_CLASS_ARMOR)
-    {
-        // Faction restriction
-        if ((proto->Flags2 & ITEM_FLAG2_FACTION_HORDE && GetTeamId(true) == ALLIANCE) ||
-            (proto->Flags2 & ITEM_FLAG2_FACTION_ALLIANCE && GetTeamId(true) == HORDE))
-            return false;
-
-        if (uint32 skill = proto->GetSkill())
-        {
-            bool allowEquip = false;
-            // Heirloom armor can "morph" if skill not learned
-            if (proto->Quality == ITEM_QUALITY_HEIRLOOM && !HasSkill(skill))
-            {
-                switch (getClass())
-                {
-                case CLASS_HUNTER:
-                case CLASS_SHAMAN:
-                    allowEquip = (skill == SKILL_MAIL);
-                    break;
-                case CLASS_PALADIN:
-                case CLASS_WARRIOR:
-                    allowEquip = (skill == SKILL_PLATE_MAIL);
-                    break;
-                }
-            }
-            if (!allowEquip && GetSkillValue(skill) == 0)
-                return false;
-        }
-    }
-
-    // Relic class restriction
-    if (proto->InventoryType == INVTYPE_RELIC)
-    {
-        switch (getClass())
-        {
-        case CLASS_DRUID:
-            if (proto->SubClass != ITEM_SUBCLASS_ARMOR_IDOL) return false;
-            break;
-        case CLASS_SHAMAN:
-            if (proto->SubClass != ITEM_SUBCLASS_ARMOR_TOTEM) return false;
-            break;
-        case CLASS_PALADIN:
-            if (proto->SubClass != ITEM_SUBCLASS_ARMOR_LIBRAM) return false;
-            break;
-        case CLASS_DEATH_KNIGHT:
-            if (proto->SubClass != ITEM_SUBCLASS_ARMOR_SIGIL) return false;
-            break;
-        default:
-            return false;
-        }
-    }
-
-    // Ranged weapon restriction
-    if (proto->InventoryType == INVTYPE_RANGED)
-    {
-        switch (getClass())
-        {
-        case CLASS_DRUID:
-        case CLASS_SHAMAN:
-        case CLASS_PALADIN:
-        case CLASS_DEATH_KNIGHT:
-            return false;
-        default:
-            break;
-        }
-    }
-
-    return true;
 }
 
 InventoryResult Player::CanEquipUniqueItem(Item* pItem, uint8 eslot, uint32 limit_count) const
