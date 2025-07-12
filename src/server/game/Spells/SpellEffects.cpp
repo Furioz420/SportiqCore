@@ -5026,7 +5026,7 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
     }
 }
 
-void Spell::EffectLeapBack(SpellEffIndex effIndex)
+/*void Spell::EffectLeapBack(SpellEffIndex effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
         return;
@@ -5047,6 +5047,38 @@ void Spell::EffectLeapBack(SpellEffIndex effIndex)
     // xinef: changes fall time
     if (m_caster->IsPlayer())
         m_caster->ToPlayer()->SetFallInformation(GameTime::GetGameTime().count(), m_caster->GetPositionZ());
+}
+
+Replaced by browlers code for DH
+*/
+void Spell::EffectLeapBack(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_LAUNCH_TARGET)
+        return;
+
+    if (!unitTarget)
+        return;
+
+    float speedxy = m_spellInfo->Effects[effIndex].MiscValue / 10.0f;
+    float speedz = damage / 10.0f;
+    int32 directional = m_spellInfo->Effects[effIndex].MiscValueB;
+
+    if (directional == 1)
+    {
+        Unit* casterUnit = m_caster->ToPlayer();
+        if (casterUnit->GetTypeId() == TYPEID_PLAYER && casterUnit->HasUnitMovementFlag(MOVEMENTFLAG_WALKING))
+            speedxy = casterUnit->GetSpeed(MOVE_WALK);
+        else
+            speedxy = casterUnit->GetSpeed(MOVE_RUN);
+    }
+
+    // 1891: Disengage
+    unitTarget->JumpTo(speedxy, speedz, m_spellInfo->SpellIconID != 1891);
+
+    // changes fall time
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        m_caster->ToPlayer()->SetFallInformation(0, m_caster->GetPositionZ());
+
 }
 
 void Spell::EffectQuestClear(SpellEffIndex effIndex)

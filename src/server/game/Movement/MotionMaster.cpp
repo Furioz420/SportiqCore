@@ -887,6 +887,44 @@ void MotionMaster::MoveRotate(uint32 time, RotateDirection direction)
     Mutate(new RotateMovementGenerator(time, direction), MOTION_SLOT_ACTIVE);
 }
 
+void MotionMaster::MoveFelRush(float x, float y, float z, float speed, uint32 id, bool maintainHeight)
+{
+    if (_owner->HasUnitState(UNIT_STATE_ROOT) || _owner->HasUnitState(UNIT_STATE_STUNNED))
+        return;
+
+    if (maintainHeight)
+        z = _owner->GetPositionZ();
+
+    if (!_owner->IsWithinLOS(x, y, z))
+    {
+        float adjustedZ = _owner->GetMap()->GetHeight(_owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ(), true);
+        if (adjustedZ > INVALID_HEIGHT)
+        {
+            z = adjustedZ;
+        }
+        else
+            return;
+    }
+
+    Movement::MoveSplineInit init(_owner);
+    init.SetVelocity(speed);
+    init.SetSmooth();
+    init.DisableTransportPathTransformations();
+
+    if (_owner->IsFalling())
+    {
+        init.MoveTo(x, y, z, false);
+        _owner->CastSpell(_owner, 100074, true); // Cast Glide Spell if falling
+    }
+    else
+    {
+        init.MoveTo(x, y, z, true);
+    }
+
+
+    init.Launch();
+}
+
 void MotionMaster::propagateSpeedChange()
 {
     /*Impl::container_type::iterator it = Impl::c.begin();

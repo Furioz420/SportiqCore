@@ -92,13 +92,12 @@ enum Races
     RACE_PANDAREN_H = 22,
     RACE_BROKEN = 23,
     RACE_ILLIDARI_NIGHTELF = 24,
-    RACE_HIGHMOUNTAIN = 25,
-    RACE_PANDAREN_A = 26,
-    RACE_ILLIDARI_BLOODELF = 27,
-    RACE_MURLOC = 28,
-    RACE_DARKIRONDWARF = 29,
-    RACE_DRACTHYR_A = 30,
-    RACE_KULTIRAN = 31
+    RACE_PANDAREN_A = 25,
+    RACE_ILLIDARI_BLOODELF = 26,
+    RACE_MURLOC = 27,
+    RACE_DARKIRONDWARF = 28,
+    RACE_DRACTHYR_A = 29,
+    RACE_KULTIRAN = 30
 };
 
 // max+1 for player race
@@ -113,16 +112,15 @@ enum Races
    (1<<(RACE_EREDAR-1))            | (1<<(RACE_DRACTHYR_H-1))         | (1<<(RACE_TROLL_ZANDALARI-1))    | \
    (1<<(RACE_OGRE-1))              | (1<<(RACE_LIGHTFORGED-1))        | (1<<(RACE_GOBLIN-1))             | \
    (1<<(RACE_PANDAREN_H-1))        | (1<<(RACE_BROKEN-1))             | (1<<(RACE_ILLIDARI_NIGHTELF-1))  | \
-   (1<<(RACE_HIGHMOUNTAIN-1))      | (1<<(RACE_PANDAREN_A-1))         | (1<<(RACE_ILLIDARI_BLOODELF-1))  | \
-   (1<<(RACE_MURLOC-1))            | (1<<(RACE_DARKIRONDWARF-1))      | (1<<(RACE_DRACTHYR_A-1))         | \
-   (1<<(RACE_KULTIRAN-1))          |
+   (1<<(RACE_PANDAREN_A-1))        | (1<<(RACE_ILLIDARI_BLOODELF-1))  | (1<<(RACE_MURLOC-1))             | \
+   (1<<(RACE_DARKIRONDWARF-1))     | (1<<(RACE_DRACTHYR_A-1))         | (1<<(RACE_KULTIRAN-1)))
 
 #define RACEMASK_ALLIANCE \
-     ((1<<(RACE_HUMAN-1))              | (1<<(RACE_DWARF-1))              | (1<<(RACE_NIGHTELF-1)) | \
-     (1<<(RACE_GNOME-1))               | (1<<(RACE_DRAENEI-1))            | (1<<(RACE_KULTIRAN-1)) | \
-     (1<<(RACE_DARKIRONDWARF-1))       | (1<<(RACE_ILLIDARI_NIGHTELF-1))  | (1<<(RACE_TUSKARR-1))  | \
-     (1<<(RACE_VOIDELF-1))             | (1<<(RACE_LIGHTFORGED-1))        | (1<<(RACE_WORGEN-1))   | \
-     (1<<(RACE_DRACTHYR_A-1))          | (1<<(RACE_PANDAREN_A-1)))
+     ((1<<(RACE_HUMAN-1))              | (1<<(RACE_DWARF-1))              | (1<<(RACE_NIGHTELF-1))        | \
+     (1<<(RACE_GNOME-1))               | (1<<(RACE_DRAENEI-1))            | (1<<(RACE_WORGEN-1))          | \
+     (1<<(RACE_TUSKARR-1))             | (1<<(RACE_VOIDELF-1))            | (1<<(RACE_LIGHTFORGED-1))     | \
+     (1<<(RACE_ILLIDARI_NIGHTELF-1))   | (1<<(RACE_PANDAREN_A-1))         | (1<<(RACE_DARKIRONDWARF-1))   | \
+     (1<<(RACE_DRACTHYR_A-1))          | (1<<(RACE_KULTIRAN-1)))
 
 
 #define RACEMASK_HORDE RACEMASK_ALL_PLAYABLE & ~RACEMASK_ALLIANCE
@@ -155,7 +153,7 @@ enum class DisplayRace : uint8
     Pandareh = 22,
     Broken = 23,
     Illidari_NightElf = 24,
-    Highmountain = 25,
+    Nagaz = 25, //placeholder thingi
     Pandaren_a = 26,
     Illidari_BloodElf = 27,
     Troll2 = 28,            //Murloc
@@ -199,7 +197,7 @@ enum Classes
     CLASS_SHAMAN = 7, // TITLE Shaman
     CLASS_MAGE = 8, // TITLE Mage
     CLASS_WARLOCK = 9, // TITLE Warlock
-    //CLASS_UNK           = 10,
+    CLASS_DEMONHUNTER = 10,
     CLASS_DRUID = 11 // TITLE Druid
 };
 
@@ -209,8 +207,8 @@ enum Classes
 #define CLASSMASK_ALL_PLAYABLE \
     ((1<<(CLASS_WARRIOR-1))|(1<<(CLASS_PALADIN-1))|(1<<(CLASS_HUNTER-1))| \
     (1<<(CLASS_ROGUE-1))  |(1<<(CLASS_PRIEST-1)) |(1<<(CLASS_SHAMAN-1))| \
-    (1<<(CLASS_MAGE-1))   |(1<<(CLASS_WARLOCK-1))|(1<<(CLASS_DRUID-1)) | \
-    (1<<(CLASS_DEATH_KNIGHT-1)))
+    (1<<(CLASS_MAGE-1))   |(1<<(CLASS_WARLOCK-1))|(1<<(CLASS_DEMONHUNTER-1)) | \
+    (1<<(CLASS_DRUID-1))  |(1<<(CLASS_DEATH_KNIGHT-1)))
 
 // valid classes for creature_template.unit_class
 enum UnitClass

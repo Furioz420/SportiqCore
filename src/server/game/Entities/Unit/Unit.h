@@ -1637,7 +1637,10 @@ public:
     }
 
     void KnockbackFrom(float x, float y, float speedXY, float speedZ);
-    void JumpTo(float speedXY, float speedZ, bool forward = true);
+    /* void JumpTo(float speedXY, float speedZ, bool forward = true);
+    * Replaced by browlers code
+    * */
+    void JumpTo(float speedXY, float speedZ, bool forward = true, Optional<Position> dest = {}, int32 directional = 0);
     void JumpTo(WorldObject* obj, float speedZ);
 
     void  UpdateSpeed(UnitMoveType mtype, bool forced);

@@ -2287,9 +2287,6 @@ public:
         case RACE_ILLIDARI_NIGHTELF:
             raceStr = "Illidari Night Elf";
             break;
-        case RACE_HIGHMOUNTAIN:
-            raceStr = "Highmountain";
-            break;
         case RACE_PANDAREN_A:
             raceStr = "Pandaren (a)";
             break;

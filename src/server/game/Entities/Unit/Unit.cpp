@@ -19424,6 +19424,50 @@ bool Unit::IsAttackSpeedOverridenShapeShift() const
     return false;
 }
 
+void Unit::JumpTo(float speedXY, float speedZ, bool forward, Optional<Position> dest, int32 directional)
+{
+    float angle = forward ? 0 : float(M_PI);
+
+    if (directional != 0 && forward)
+    {
+        if (HasUnitMovementFlag(MOVEMENTFLAG_FORWARD))
+        {
+            angle = 0;
+
+            if (HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_LEFT))
+                angle = M_PI * 0.25f;
+            else if (HasUnitMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+                angle = M_PI * 1.75f;
+        }
+    }
+
+    if (dest)
+    {
+        float x = dest->GetPositionX();
+        float y = dest->GetPositionY();
+        angle += GetRelativeAngle(x, y);
+    }
+
+    if (GetTypeId() == TYPEID_UNIT)
+        GetMotionMaster()->MoveJumpTo(angle, speedXY, speedZ);
+    else
+    {
+        float vcos = std::cos(angle + GetOrientation());
+        float vsin = std::sin(angle + GetOrientation());
+
+        WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8 + 4 + 4 + 4 + 4 + 4));
+        data << GetPackGUID();
+        data << uint32(0);                                      // Sequence
+        data << float(vcos);                                    // x direction
+        data << float(vsin);                                    // y direction
+        data << float(speedXY);                                 // Horizontal speed
+        data << float(-speedZ);                                 // Z Movement speed (vertical)
+
+        ToPlayer()->GetSession()->SendPacket(&data);
+    }
+
+}
+/*
 void Unit::JumpTo(float speedXY, float speedZ, bool forward)
 {
     float angle = forward ? 0 : M_PI;
@@ -19445,6 +19489,8 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
         ToPlayer()->GetSession()->SendPacket(&data);
     }
 }
+* Replaced by browlers code
+*/
 
 void Unit::JumpTo(WorldObject* obj, float speedZ)
 {

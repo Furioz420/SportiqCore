@@ -237,6 +237,7 @@ public:
     void MoveDistract(uint32 time);
     void MovePath(uint32 path_id, bool repeatable);
     void MoveRotate(uint32 time, RotateDirection direction);
+    void MoveFelRush(float x, float y, float z, float speed, uint32 id, bool maintainHeight = true);
 
     [[nodiscard]] MovementGeneratorType GetCurrentMovementGeneratorType() const;
     [[nodiscard]] MovementGeneratorType GetMotionSlotType(int slot) const;
