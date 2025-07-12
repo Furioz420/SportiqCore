@@ -35,6 +35,8 @@ void AddSC_npc_manifestation_of_pride();
 void AddSC_spell_belligerent_missile_launcher();
 void AddSC_npc_belligerent_missile();
 void AddSC_spell_bursting_with_pride();
+//DH
+void AddSC_demonhunter_spell_scripts();
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -59,4 +61,6 @@ void AddCustomScripts()
     AddSC_spell_belligerent_missile_launcher();
     AddSC_npc_belligerent_missile();
     AddSC_spell_bursting_with_pride();
+    //DH
+    AddSC_demonhunter_spell_scripts();
 }
